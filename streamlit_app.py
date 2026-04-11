@@ -35,6 +35,14 @@ def _build_inlined_html() -> str:
 <script>
   (function () {
     function getDocHeight() {
+      var page = document.querySelector(".page");
+      if (page) {
+        var pageStyles = window.getComputedStyle(page);
+        var pageMarginTop = parseFloat(pageStyles.marginTop) || 0;
+        var pageMarginBottom = parseFloat(pageStyles.marginBottom) || 0;
+        return Math.ceil(page.getBoundingClientRect().height + pageMarginTop + pageMarginBottom);
+      }
+
       return Math.max(
         document.documentElement.scrollHeight,
         document.body ? document.body.scrollHeight : 0,
@@ -102,17 +110,27 @@ st.markdown(
 
       [data-testid="stMainBlockContainer"] {
         max-width: none;
-        padding: 0;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      div[data-testid="stElementContainer"] {
+        margin: 0 !important;
+      }
+
+      div[data-testid="stVerticalBlock"] {
+        gap: 0 !important;
       }
 
       /* Remove default iframe card feeling */
       .stIFrame {
         border: 0;
+        display: block;
       }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# Start with a safe viewport height, then auto-resize dynamically in iframe JS.
-components.html(_build_inlined_html(), height=900, scrolling=False)
+# Start small; iframe script grows/shrinks to exact content height.
+components.html(_build_inlined_html(), height=100, scrolling=False)
