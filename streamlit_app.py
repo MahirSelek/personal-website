@@ -30,6 +30,58 @@ def _build_inlined_html() -> str:
         html,
         count=1,
     )
+
+    auto_resize_script = """
+<script>
+  (function () {
+    function getDocHeight() {
+      return Math.max(
+        document.documentElement.scrollHeight,
+        document.body ? document.body.scrollHeight : 0,
+        document.documentElement.offsetHeight,
+        document.body ? document.body.offsetHeight : 0
+      );
+    }
+
+    function applyHeight() {
+      var frame = window.frameElement;
+      if (!frame) return;
+      frame.style.height = getDocHeight() + "px";
+    }
+
+    var scheduled = false;
+    function scheduleHeightUpdate() {
+      if (scheduled) return;
+      scheduled = true;
+      window.requestAnimationFrame(function () {
+        scheduled = false;
+        applyHeight();
+      });
+    }
+
+    window.addEventListener("load", scheduleHeightUpdate);
+    window.addEventListener("resize", scheduleHeightUpdate);
+
+    if (document.body) {
+      new ResizeObserver(scheduleHeightUpdate).observe(document.body);
+      new MutationObserver(scheduleHeightUpdate).observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true
+      });
+    }
+
+    // Capture late async updates caused by JS UI interactions.
+    setInterval(scheduleHeightUpdate, 300);
+    scheduleHeightUpdate();
+  })();
+</script>
+"""
+    if "</body>" in html:
+        html = html.replace("</body>", f"{auto_resize_script}\n</body>", 1)
+    else:
+        html += auto_resize_script
     return html
 
 
@@ -62,5 +114,5 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Use a viewport-sized frame to avoid large blank gaps under the app.
-components.html(_build_inlined_html(), height=1100, scrolling=False)
+# Start with a safe viewport height, then auto-resize dynamically in iframe JS.
+components.html(_build_inlined_html(), height=900, scrolling=False)
