@@ -1,0 +1,14 @@
+{
+  "name": "mahir-selek-personal-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static personal website for Mahir Selek (Data Scientist, AI Engineer, PhD candidate).",
+  "scripts": {},
+  "keywords": [
+    "portfolio",
+    "data-scientist",
+    "ai",
+    "llm"
+  ]
+}
+
