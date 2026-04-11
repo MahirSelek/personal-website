@@ -38,4 +38,29 @@ st.set_page_config(
     page_title="Mahir Selek | Data Scientist & AI Engineer",
     initial_sidebar_state="collapsed",
 )
-components.html(_build_inlined_html(), height=12000, scrolling=True)
+
+st.markdown(
+    """
+    <style>
+      /* Make Streamlit host page behave like a full-bleed web container */
+      [data-testid="stAppViewContainer"],
+      [data-testid="stMain"] {
+        background: #fdf6e3;
+      }
+
+      [data-testid="stMainBlockContainer"] {
+        max-width: none;
+        padding: 0;
+      }
+
+      /* Remove default iframe card feeling */
+      .stIFrame {
+        border: 0;
+      }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Use a viewport-sized frame to avoid large blank gaps under the app.
+components.html(_build_inlined_html(), height=1100, scrolling=False)
