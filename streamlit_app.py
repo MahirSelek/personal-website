@@ -110,7 +110,8 @@ st.markdown(
 
       [data-testid="stMainBlockContainer"] {
         max-width: none;
-        padding: 0 !important;
+        /* Breathing room below Streamlit’s top toolbar (was flush with the black header). */
+        padding: 1.25rem 0 0 0 !important;
         margin: 0 !important;
       }
 
