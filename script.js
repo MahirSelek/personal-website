@@ -176,6 +176,28 @@ const sections = {
       <div class="detail-grid">
         <div class="detail-item">
           <div class="detail-item-header">
+            <div class="detail-item-title">Buyer Persona Agent · Sentiment Analysis</div>
+          </div>
+          <div class="detail-item-body">
+            <p>
+              Flask web application for product managers to chat with synthetic consumers grounded
+              in HB-MNL utility models. Managers create projects, calibrate agentic personas with
+              feature sliders, conduct first-person interviews via Gemini on Vertex AI, and run
+              portfolio- and session-level sentiment analysis on saved conversations — with
+              charts, aspect scoring and persistence on Google Cloud Storage.
+            </p>
+            <div class="tag-row">
+              <span class="tag">Vertex AI</span>
+              <span class="tag">Gemini</span>
+              <span class="tag">Sentiment analysis</span>
+              <span class="tag">HB-MNL</span>
+              <span class="tag">GCS</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-item-header">
             <div class="detail-item-title">Fiorentina ACF Sentiment Analysis Chatbot · ViolaPulse</div>
           </div>
           <div class="detail-item-body">
