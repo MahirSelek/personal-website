@@ -50,6 +50,11 @@ body {
   margin-bottom: 32px;
 }
 
+/* Cache-safe kill switch for previously injected top visuals. */
+.hero-ambient {
+  display: none !important;
+}
+
 .hero-photo {
   display: flex;
   justify-content: center;
@@ -209,6 +214,12 @@ body {
   background: #fffbe6;
 }
 
+.card.is-active {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 #000;
+  background: #fffbe6;
+}
+
 .card:focus-visible {
   outline: 3px solid var(--accent-4);
   outline-offset: 2px;
@@ -262,6 +273,14 @@ body {
 .detail-content {
   font-size: 0.92rem;
   line-height: 1.5;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.detail-panel.is-switching .detail-content {
+  opacity: 0;
+  transform: translateY(4px);
 }
 
 .detail-grid {

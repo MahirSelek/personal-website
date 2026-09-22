@@ -396,15 +396,31 @@ const sections = {
   },
 };
 
+function setActiveCard(key) {
+  const cards = document.querySelectorAll(".card[data-section]");
+  cards.forEach((card) => {
+    const isActive = card.getAttribute("data-section") === key;
+    card.classList.toggle("is-active", isActive);
+  });
+}
+
 function setSection(key) {
   const section = sections[key];
   if (!section) return;
 
+  const panelEl = document.querySelector(".detail-panel");
   const titleEl = document.getElementById("detail-title");
   const contentEl = document.getElementById("detail-content");
 
-  titleEl.textContent = section.title;
-  contentEl.innerHTML = section.html;
+  panelEl?.classList.add("is-switching");
+  window.setTimeout(() => {
+    titleEl.textContent = section.title;
+    contentEl.innerHTML = section.html;
+    panelEl?.classList.remove("is-switching");
+  }, 110);
+
+  setActiveCard(key);
+  window.history.replaceState(null, "", `#${key}`);
 }
 
 function initCards() {
@@ -416,7 +432,9 @@ function initCards() {
     });
   });
 
-  setSection("about");
+  const hashKey = window.location.hash.replace("#", "");
+  const startKey = sections[hashKey] ? hashKey : "about";
+  setSection(startKey);
 }
 
 document.addEventListener("DOMContentLoaded", initCards);
