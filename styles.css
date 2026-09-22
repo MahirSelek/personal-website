@@ -48,110 +48,6 @@ body {
   gap: 32px;
   align-items: center;
   margin-bottom: 32px;
-  position: relative;
-  isolation: isolate;
-}
-
-.hero > * {
-  position: relative;
-  z-index: 1;
-}
-
-.hero-ambient {
-  position: absolute;
-  inset: -2px;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: 14px;
-  overflow: hidden;
-  opacity: 0.2;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.2));
-}
-
-.hero-ambient::before {
-  content: "";
-  position: absolute;
-  left: 6%;
-  right: 6%;
-  top: 8px;
-  height: 16px;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-  background-image:
-    repeating-linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.45) 0 6px,
-      transparent 6px 14px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255, 107, 107, 0.28),
-      rgba(29, 211, 176, 0.28),
-      rgba(255, 217, 61, 0.28),
-      rgba(255, 107, 107, 0.28)
-    );
-  background-size: 130% 100%, 220% 100%;
-  animation: pixel-flow 9s linear infinite;
-}
-
-.hero-ambient::after {
-  content: "";
-  position: absolute;
-  left: 9%;
-  right: 9%;
-  top: 30px;
-  height: 34px;
-  border-top: 2px solid rgba(0, 0, 0, 0.22);
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
-    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
-    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
-    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
-    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
-    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
-    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
-    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78));
-  background-size:
-    7% 42%,
-    8% 62%,
-    24% 5%,
-    6% 52%,
-    6% 68%,
-    26% 5%,
-    7% 58%,
-    9% 44%;
-  background-position:
-    4% 100%,
-    13% 100%,
-    24% 36%,
-    57% 100%,
-    66% 100%,
-    70% 40%,
-    86% 100%,
-    94% 100%;
-  background-repeat: no-repeat;
-  animation: pixel-silhouette-drift 12s ease-in-out infinite;
-}
-
-@keyframes pixel-flow {
-  0% {
-    background-position: 0 0, 0 0;
-  }
-  100% {
-    background-position: 130% 0, 220% 0;
-  }
-}
-
-@keyframes pixel-silhouette-drift {
-  0%,
-  100% {
-    transform: translateX(0);
-    opacity: 0.8;
-  }
-  50% {
-    transform: translateX(3px);
-    opacity: 1;
-  }
 }
 
 .hero-photo {
@@ -272,6 +168,27 @@ body {
   transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
 }
 
+.card:nth-child(1),
+.card:nth-child(4) {
+  background:
+    linear-gradient(180deg, rgba(255, 217, 61, 0.12), rgba(255, 217, 61, 0)),
+    var(--card-bg);
+}
+
+.card:nth-child(2),
+.card:nth-child(5) {
+  background:
+    linear-gradient(180deg, rgba(29, 211, 176, 0.1), rgba(29, 211, 176, 0)),
+    var(--card-bg);
+}
+
+.card:nth-child(3),
+.card:nth-child(6) {
+  background:
+    linear-gradient(180deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0)),
+    var(--card-bg);
+}
+
 .card::after {
   content: "";
   position: absolute;
@@ -317,6 +234,22 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  position: relative;
+}
+
+.detail-panel::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: -12px;
+  width: 88px;
+  height: 20px;
+  border: 2px solid #000;
+  border-radius: 6px;
+  background: var(--accent-2);
+  transform: rotate(-2deg);
+  box-shadow: 2px 2px 0 #000;
+  opacity: 0.95;
 }
 
 .detail-header h2 {
@@ -342,6 +275,19 @@ body {
   border: 2px solid #000;
   padding: 10px 12px;
   background: #f9f9f9;
+  position: relative;
+}
+
+.detail-item::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid #000;
+  border-bottom: 2px solid #000;
+  background: var(--accent-3);
 }
 
 .detail-item-header {
@@ -457,15 +403,8 @@ body {
     height: 220px;
   }
 
-  .hero-ambient {
-    opacity: 0.16;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-ambient::before,
-  .hero-ambient::after {
-    animation: none;
+  .detail-panel::after {
+    width: 64px;
   }
 }
 
