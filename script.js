@@ -176,6 +176,30 @@ const sections = {
       <div class="detail-grid">
         <div class="detail-item">
           <div class="detail-item-header">
+            <div class="detail-item-title">Agentic LLM Evaluation Intelligence Pipeline</div>
+          </div>
+          <div class="detail-item-body">
+            <p>
+              Multi-agent system that continuously tracks open-web LLM evaluation signals and
+              turns them into production-ready daily briefings. Built an orchestrated flow where
+              one agent collects and ranks benchmark-relevant sources, another synthesizes concise
+              technical reports with model-aware prompting, and a publishing agent converts outputs
+              into a static website while distribution agents deliver summaries to Telegram.
+              Includes memory-driven personalization, token/cost tracking, and a secure local
+              dashboard for monitoring runs, prompts, usage and operational settings.
+            </p>
+            <div class="tag-row">
+              <span class="tag">Multi-agent orchestration</span>
+              <span class="tag">LLM evaluation</span>
+              <span class="tag">Automated publishing</span>
+              <span class="tag">Telegram delivery</span>
+              <span class="tag">Flask dashboard</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-item-header">
             <div class="detail-item-title">Buyer Persona Agent · Sentiment Analysis</div>
           </div>
           <div class="detail-item-body">
@@ -279,29 +303,6 @@ const sections = {
           </div>
         </div>
 
-        <div class="detail-item">
-          <div class="detail-item-header">
-            <div class="detail-item-title">Agentic LLM Evaluation Intelligence Pipeline</div>
-          </div>
-          <div class="detail-item-body">
-            <p>
-              Multi-agent system that continuously tracks open-web LLM evaluation signals and
-              turns them into production-ready daily briefings. Built an orchestrated flow where
-              one agent collects and ranks benchmark-relevant sources, another synthesizes concise
-              technical reports with model-aware prompting, and a publishing agent converts outputs
-              into a static website while distribution agents deliver summaries to Telegram.
-              Includes memory-driven personalization, token/cost tracking, and a secure local
-              dashboard for monitoring runs, prompts, usage and operational settings.
-            </p>
-            <div class="tag-row">
-              <span class="tag">Multi-agent orchestration</span>
-              <span class="tag">LLM evaluation</span>
-              <span class="tag">Automated publishing</span>
-              <span class="tag">Telegram delivery</span>
-              <span class="tag">Flask dashboard</span>
-            </div>
-          </div>
-        </div>
       </div>
     `,
   },
