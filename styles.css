@@ -64,112 +64,87 @@ body {
   pointer-events: none;
   border-radius: 14px;
   overflow: hidden;
-  background: #fffdf1;
-  opacity: 0.88;
-}
-
-.ambient-grid {
-  position: absolute;
-  inset: 0;
-  opacity: 0.35;
+  opacity: 0.14;
   background:
-    radial-gradient(circle at 80% 16%, rgba(29, 211, 176, 0.35) 0 18%, transparent 42%),
-    radial-gradient(circle at 26% 18%, rgba(255, 107, 107, 0.22) 0 15%, transparent 38%),
     repeating-linear-gradient(
-      140deg,
-      rgba(0, 0, 0, 0.06) 0 2px,
-      transparent 2px 11px
+      135deg,
+      rgba(0, 0, 0, 0.06),
+      rgba(0, 0, 0, 0.06) 3px,
+      transparent 3px,
+      transparent 11px
     );
 }
 
-.ambient-blob {
+.hero-ambient::before {
+  content: "";
   position: absolute;
-  border-radius: 999px;
-  filter: blur(18px);
-  opacity: 0.34;
+  left: 4%;
+  right: 4%;
+  bottom: 10px;
+  height: 42px;
+  border-top: 2px solid rgba(0, 0, 0, 0.18);
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8));
+  background-size:
+    5% 30%,
+    7% 54%,
+    4% 38%,
+    8% 62%,
+    6% 45%,
+    20% 5%,
+    10% 9%,
+    6% 52%,
+    8% 66%,
+    6% 40%,
+    7% 50%;
+  background-position:
+    2% 100%,
+    10% 100%,
+    19% 100%,
+    26% 100%,
+    36% 100%,
+    45% 38%,
+    55% 34%,
+    69% 100%,
+    77% 100%,
+    88% 100%,
+    95% 100%;
+  background-repeat: no-repeat;
+  animation: ambient-pixel-shift 14s ease-in-out infinite;
 }
 
-.ambient-blob-a {
-  width: 180px;
-  height: 110px;
-  left: 28%;
-  top: 18%;
-  background: rgba(255, 217, 61, 0.55);
-  animation: blob-a-float 13s ease-in-out infinite;
-}
-
-.ambient-blob-b {
-  width: 210px;
-  height: 120px;
-  right: 11%;
-  top: 12%;
-  background: rgba(29, 211, 176, 0.42);
-  animation: blob-b-float 11s ease-in-out infinite;
-}
-
-.ambient-blob-c {
-  width: 150px;
-  height: 88px;
-  right: 30%;
-  bottom: 14%;
-  background: rgba(91, 95, 151, 0.28);
-  animation: blob-c-float 10s ease-in-out infinite;
-}
-
-.ambient-beam {
+.hero-ambient::after {
+  content: "";
   position: absolute;
-  inset: auto -14% 8% -14%;
-  height: 38px;
-  opacity: 0.36;
-  background: linear-gradient(
-    90deg,
-    transparent 0 12%,
-    rgba(0, 0, 0, 0.05) 18% 24%,
-    rgba(255, 255, 255, 0.6) 36% 44%,
-    rgba(0, 0, 0, 0.08) 58% 64%,
-    transparent 78% 100%
-  );
-  transform: skewX(-18deg) translateX(-18%);
-  animation: beam-sweep 12s ease-in-out infinite;
+  left: 40%;
+  bottom: 26px;
+  width: 20%;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.28);
+  box-shadow:
+    -18px -9px 0 rgba(0, 0, 0, 0.22),
+    18px -9px 0 rgba(0, 0, 0, 0.22);
 }
 
-@keyframes blob-a-float {
+@keyframes ambient-pixel-shift {
   0%,
   100% {
-    transform: translate3d(0, 0, 0);
+    transform: translateX(0);
+    opacity: 0.65;
   }
   50% {
-    transform: translate3d(16px, -8px, 0);
-  }
-}
-
-@keyframes blob-b-float {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(-20px, 7px, 0);
-  }
-}
-
-@keyframes blob-c-float {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(14px, -5px, 0);
-  }
-}
-
-@keyframes beam-sweep {
-  0%,
-  100% {
-    transform: skewX(-18deg) translateX(-18%);
-  }
-  50% {
-    transform: skewX(-18deg) translateX(14%);
+    transform: translateX(4px);
+    opacity: 0.9;
   }
 }
 
@@ -476,20 +451,13 @@ body {
     height: 220px;
   }
 
-  .ambient-blob-a {
-    width: 130px;
-    height: 80px;
-  }
-
-  .ambient-blob-b {
-    width: 150px;
-    height: 85px;
+  .hero-ambient {
+    opacity: 0.11;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ambient-blob,
-  .ambient-beam {
+  .hero-ambient::before {
     animation: none;
   }
 }
