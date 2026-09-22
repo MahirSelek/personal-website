@@ -48,165 +48,79 @@ body {
   gap: 32px;
   align-items: center;
   margin-bottom: 32px;
-}
-
-.city-signal {
-  border: var(--border-width) solid #000;
-  border-radius: var(--radius);
-  background: #fff;
-  box-shadow: 8px 8px 0 #000;
-  padding: 12px 16px 14px;
-  margin: 0 0 24px;
-}
-
-.city-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.city-chip {
-  border: 2px solid #000;
-  border-radius: 999px;
-  padding: 3px 10px;
-  background: var(--accent-2);
-  font-size: 0.73rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 700;
-}
-
-.city-link {
-  flex: 1;
-  height: 6px;
-  border: 2px solid #000;
-  border-radius: 999px;
-  background:
-    linear-gradient(90deg, transparent 0 12%, #000 12% 14%, transparent 14% 26%, #000 26% 28%, transparent 28% 100%),
-    linear-gradient(90deg, var(--accent-3), var(--accent-1), var(--accent-3));
-  background-size: 100% 100%, 220% 100%;
-  animation: city-flow 7s linear infinite;
-}
-
-.skyline-track {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  min-height: 84px;
-  border: 2px solid #000;
-  border-radius: 12px;
+  isolation: isolate;
+}
+
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-ambient {
+  position: absolute;
+  inset: -4px 0 -4px 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 14px;
+  opacity: 0.18;
   background:
+    radial-gradient(circle at 15% 18%, var(--accent-2) 0 18%, transparent 40%),
+    radial-gradient(circle at 82% 20%, var(--accent-3) 0 16%, transparent 34%),
     repeating-linear-gradient(
       135deg,
-      rgba(0, 0, 0, 0.03),
-      rgba(0, 0, 0, 0.03) 5px,
-      transparent 5px,
+      rgba(0, 0, 0, 0.09),
+      rgba(0, 0, 0, 0.09) 3px,
+      transparent 3px,
       transparent 10px
-    ),
-    #fffef4;
-  overflow: hidden;
+    );
 }
 
-.skyline-track::after {
+.hero-ambient::after {
   content: "";
   position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent 0 28%, rgba(255, 255, 255, 0.35) 45%, transparent 62%);
-  transform: translateX(-120%);
-  animation: skyline-shine 8s ease-in-out infinite;
-}
-
-.skyline {
-  align-self: end;
-  height: 62px;
-  border-top: 2px solid #000;
-  background-repeat: no-repeat;
-  background-position: left bottom;
-}
-
-.skyline-padova {
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  height: 46px;
+  border-top: 2px solid rgba(0, 0, 0, 0.2);
   background-image:
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000);
+    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
+    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
+    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
+    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
+    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
+    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
+    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85));
   background-size:
-    12% 58%,
-    10% 74%,
-    14% 46%,
-    8% 88%,
-    12% 52%,
-    10% 64%,
-    16% 40%,
-    12% 70%;
-  animation: skyline-rise-left 5s ease-in-out infinite;
-}
-
-.skyline-ankara {
-  background-image:
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000),
-    linear-gradient(#000, #000);
-  background-size:
-    14% 48%,
-    10% 66%,
-    12% 84%,
+    7% 46%,
+    9% 72%,
+    6% 60%,
+    11% 84%,
     8% 58%,
-    15% 72%,
-    9% 52%,
-    11% 64%,
-    13% 42%;
-  animation: skyline-rise-right 5.6s ease-in-out infinite reverse;
+    10% 76%,
+    7% 52%;
+  background-repeat: no-repeat;
+  background-position:
+    8% 100%,
+    20% 100%,
+    34% 100%,
+    51% 100%,
+    68% 100%,
+    82% 100%,
+    93% 100%;
+  animation: ambient-skyline 15s ease-in-out infinite;
 }
 
-@keyframes city-flow {
-  0% {
-    background-position: 0 0, 0 0;
-  }
-  100% {
-    background-position: 0 0, 220% 0;
-  }
-}
-
-@keyframes skyline-shine {
-  0%,
-  35%,
-  100% {
-    transform: translateX(-120%);
-  }
-  55% {
-    transform: translateX(120%);
-  }
-}
-
-@keyframes skyline-rise-left {
+@keyframes ambient-skyline {
   0%,
   100% {
     transform: translateY(0);
+    opacity: 0.48;
   }
   50% {
-    transform: translateY(-3px);
-  }
-}
-
-@keyframes skyline-rise-right {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
+    opacity: 0.62;
   }
 }
 
@@ -492,12 +406,6 @@ body {
   .layout {
     grid-template-columns: minmax(0, 1fr);
   }
-
-  .skyline-track {
-    grid-template-columns: 1fr;
-    gap: 6px;
-    min-height: 120px;
-  }
 }
 
 @media (max-width: 640px) {
@@ -517,6 +425,12 @@ body {
   .photo-frame {
     width: 220px;
     height: 220px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-ambient::after {
+    animation: none;
   }
 }
 
