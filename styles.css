@@ -59,68 +59,117 @@ body {
 
 .hero-ambient {
   position: absolute;
-  inset: -4px 0 -4px 0;
+  inset: -2px;
   z-index: 0;
   pointer-events: none;
   border-radius: 14px;
-  opacity: 0.18;
+  overflow: hidden;
+  background: #fffdf1;
+  opacity: 0.88;
+}
+
+.ambient-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
   background:
-    radial-gradient(circle at 15% 18%, var(--accent-2) 0 18%, transparent 40%),
-    radial-gradient(circle at 82% 20%, var(--accent-3) 0 16%, transparent 34%),
+    radial-gradient(circle at 80% 16%, rgba(29, 211, 176, 0.35) 0 18%, transparent 42%),
+    radial-gradient(circle at 26% 18%, rgba(255, 107, 107, 0.22) 0 15%, transparent 38%),
     repeating-linear-gradient(
-      135deg,
-      rgba(0, 0, 0, 0.09),
-      rgba(0, 0, 0, 0.09) 3px,
-      transparent 3px,
-      transparent 10px
+      140deg,
+      rgba(0, 0, 0, 0.06) 0 2px,
+      transparent 2px 11px
     );
 }
 
-.hero-ambient::after {
-  content: "";
+.ambient-blob {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 6px;
-  height: 46px;
-  border-top: 2px solid rgba(0, 0, 0, 0.2);
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
-    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
-    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
-    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
-    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
-    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
-    linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85));
-  background-size:
-    7% 46%,
-    9% 72%,
-    6% 60%,
-    11% 84%,
-    8% 58%,
-    10% 76%,
-    7% 52%;
-  background-repeat: no-repeat;
-  background-position:
-    8% 100%,
-    20% 100%,
-    34% 100%,
-    51% 100%,
-    68% 100%,
-    82% 100%,
-    93% 100%;
-  animation: ambient-skyline 15s ease-in-out infinite;
+  border-radius: 999px;
+  filter: blur(18px);
+  opacity: 0.34;
 }
 
-@keyframes ambient-skyline {
+.ambient-blob-a {
+  width: 180px;
+  height: 110px;
+  left: 28%;
+  top: 18%;
+  background: rgba(255, 217, 61, 0.55);
+  animation: blob-a-float 13s ease-in-out infinite;
+}
+
+.ambient-blob-b {
+  width: 210px;
+  height: 120px;
+  right: 11%;
+  top: 12%;
+  background: rgba(29, 211, 176, 0.42);
+  animation: blob-b-float 11s ease-in-out infinite;
+}
+
+.ambient-blob-c {
+  width: 150px;
+  height: 88px;
+  right: 30%;
+  bottom: 14%;
+  background: rgba(91, 95, 151, 0.28);
+  animation: blob-c-float 10s ease-in-out infinite;
+}
+
+.ambient-beam {
+  position: absolute;
+  inset: auto -14% 8% -14%;
+  height: 38px;
+  opacity: 0.36;
+  background: linear-gradient(
+    90deg,
+    transparent 0 12%,
+    rgba(0, 0, 0, 0.05) 18% 24%,
+    rgba(255, 255, 255, 0.6) 36% 44%,
+    rgba(0, 0, 0, 0.08) 58% 64%,
+    transparent 78% 100%
+  );
+  transform: skewX(-18deg) translateX(-18%);
+  animation: beam-sweep 12s ease-in-out infinite;
+}
+
+@keyframes blob-a-float {
   0%,
   100% {
-    transform: translateY(0);
-    opacity: 0.48;
+    transform: translate3d(0, 0, 0);
   }
   50% {
-    transform: translateY(-2px);
-    opacity: 0.62;
+    transform: translate3d(16px, -8px, 0);
+  }
+}
+
+@keyframes blob-b-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-20px, 7px, 0);
+  }
+}
+
+@keyframes blob-c-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(14px, -5px, 0);
+  }
+}
+
+@keyframes beam-sweep {
+  0%,
+  100% {
+    transform: skewX(-18deg) translateX(-18%);
+  }
+  50% {
+    transform: skewX(-18deg) translateX(14%);
   }
 }
 
@@ -426,10 +475,21 @@ body {
     width: 220px;
     height: 220px;
   }
+
+  .ambient-blob-a {
+    width: 130px;
+    height: 80px;
+  }
+
+  .ambient-blob-b {
+    width: 150px;
+    height: 85px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-ambient::after {
+  .ambient-blob,
+  .ambient-beam {
     animation: none;
   }
 }
