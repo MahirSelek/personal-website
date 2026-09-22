@@ -50,6 +50,166 @@ body {
   margin-bottom: 32px;
 }
 
+.city-signal {
+  border: var(--border-width) solid #000;
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: 8px 8px 0 #000;
+  padding: 12px 16px 14px;
+  margin: 0 0 24px;
+}
+
+.city-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.city-chip {
+  border: 2px solid #000;
+  border-radius: 999px;
+  padding: 3px 10px;
+  background: var(--accent-2);
+  font-size: 0.73rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.city-link {
+  flex: 1;
+  height: 6px;
+  border: 2px solid #000;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, transparent 0 12%, #000 12% 14%, transparent 14% 26%, #000 26% 28%, transparent 28% 100%),
+    linear-gradient(90deg, var(--accent-3), var(--accent-1), var(--accent-3));
+  background-size: 100% 100%, 220% 100%;
+  animation: city-flow 7s linear infinite;
+}
+
+.skyline-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  min-height: 84px;
+  border: 2px solid #000;
+  border-radius: 12px;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.03),
+      rgba(0, 0, 0, 0.03) 5px,
+      transparent 5px,
+      transparent 10px
+    ),
+    #fffef4;
+  overflow: hidden;
+}
+
+.skyline-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0 28%, rgba(255, 255, 255, 0.35) 45%, transparent 62%);
+  transform: translateX(-120%);
+  animation: skyline-shine 8s ease-in-out infinite;
+}
+
+.skyline {
+  align-self: end;
+  height: 62px;
+  border-top: 2px solid #000;
+  background-repeat: no-repeat;
+  background-position: left bottom;
+}
+
+.skyline-padova {
+  background-image:
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000);
+  background-size:
+    12% 58%,
+    10% 74%,
+    14% 46%,
+    8% 88%,
+    12% 52%,
+    10% 64%,
+    16% 40%,
+    12% 70%;
+  animation: skyline-rise-left 5s ease-in-out infinite;
+}
+
+.skyline-ankara {
+  background-image:
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000);
+  background-size:
+    14% 48%,
+    10% 66%,
+    12% 84%,
+    8% 58%,
+    15% 72%,
+    9% 52%,
+    11% 64%,
+    13% 42%;
+  animation: skyline-rise-right 5.6s ease-in-out infinite reverse;
+}
+
+@keyframes city-flow {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 0 0, 220% 0;
+  }
+}
+
+@keyframes skyline-shine {
+  0%,
+  35%,
+  100% {
+    transform: translateX(-120%);
+  }
+  55% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes skyline-rise-left {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes skyline-rise-right {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
 .hero-photo {
   display: flex;
   justify-content: center;
@@ -331,6 +491,12 @@ body {
 
   .layout {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .skyline-track {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    min-height: 120px;
   }
 }
 
