@@ -64,87 +64,93 @@ body {
   pointer-events: none;
   border-radius: 14px;
   overflow: hidden;
-  opacity: 0.14;
-  background:
-    repeating-linear-gradient(
-      135deg,
-      rgba(0, 0, 0, 0.06),
-      rgba(0, 0, 0, 0.06) 3px,
-      transparent 3px,
-      transparent 11px
-    );
+  opacity: 0.2;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.2));
 }
 
 .hero-ambient::before {
   content: "";
   position: absolute;
-  left: 4%;
-  right: 4%;
-  bottom: 10px;
-  height: 42px;
-  border-top: 2px solid rgba(0, 0, 0, 0.18);
+  left: 6%;
+  right: 6%;
+  top: 8px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
   background-image:
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8));
-  background-size:
-    5% 30%,
-    7% 54%,
-    4% 38%,
-    8% 62%,
-    6% 45%,
-    20% 5%,
-    10% 9%,
-    6% 52%,
-    8% 66%,
-    6% 40%,
-    7% 50%;
-  background-position:
-    2% 100%,
-    10% 100%,
-    19% 100%,
-    26% 100%,
-    36% 100%,
-    45% 38%,
-    55% 34%,
-    69% 100%,
-    77% 100%,
-    88% 100%,
-    95% 100%;
-  background-repeat: no-repeat;
-  animation: ambient-pixel-shift 14s ease-in-out infinite;
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.45) 0 6px,
+      transparent 6px 14px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 107, 107, 0.28),
+      rgba(29, 211, 176, 0.28),
+      rgba(255, 217, 61, 0.28),
+      rgba(255, 107, 107, 0.28)
+    );
+  background-size: 130% 100%, 220% 100%;
+  animation: pixel-flow 9s linear infinite;
 }
 
 .hero-ambient::after {
   content: "";
   position: absolute;
-  left: 40%;
-  bottom: 26px;
-  width: 20%;
-  height: 2px;
-  background: rgba(0, 0, 0, 0.28);
-  box-shadow:
-    -18px -9px 0 rgba(0, 0, 0, 0.22),
-    18px -9px 0 rgba(0, 0, 0, 0.22);
+  left: 9%;
+  right: 9%;
+  top: 30px;
+  height: 34px;
+  border-top: 2px solid rgba(0, 0, 0, 0.22);
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
+    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
+    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
+    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
+    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
+    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
+    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)),
+    linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78));
+  background-size:
+    7% 42%,
+    8% 62%,
+    24% 5%,
+    6% 52%,
+    6% 68%,
+    26% 5%,
+    7% 58%,
+    9% 44%;
+  background-position:
+    4% 100%,
+    13% 100%,
+    24% 36%,
+    57% 100%,
+    66% 100%,
+    70% 40%,
+    86% 100%,
+    94% 100%;
+  background-repeat: no-repeat;
+  animation: pixel-silhouette-drift 12s ease-in-out infinite;
 }
 
-@keyframes ambient-pixel-shift {
+@keyframes pixel-flow {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 130% 0, 220% 0;
+  }
+}
+
+@keyframes pixel-silhouette-drift {
   0%,
   100% {
     transform: translateX(0);
-    opacity: 0.65;
+    opacity: 0.8;
   }
   50% {
-    transform: translateX(4px);
-    opacity: 0.9;
+    transform: translateX(3px);
+    opacity: 1;
   }
 }
 
@@ -452,12 +458,13 @@ body {
   }
 
   .hero-ambient {
-    opacity: 0.11;
+    opacity: 0.16;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-ambient::before {
+  .hero-ambient::before,
+  .hero-ambient::after {
     animation: none;
   }
 }
