@@ -5,11 +5,11 @@
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  // Monet Impression, soleil levant — bold, readable glyph scene + mouse pull.
-  const CELL_W = 9;
-  const CELL_H = 13;
-  const MOUSE_RADIUS = 170;
-  const PULL = 0.42;
+  // Prato della Valle, Padova — statues + canal + Santa Giustina domes
+  const CELL_W = 8;
+  const CELL_H = 12;
+  const MOUSE_RADIUS = 150;
+  const PULL = 0.38;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
@@ -23,6 +23,10 @@
   let noise = new Float32Array(0);
   let raf = 0;
   let visible = true;
+
+  // Pedestal+statue positions along both canal banks (normalized).
+  const INNER = [0.18, 0.28, 0.38, 0.48, 0.58, 0.68, 0.78];
+  const OUTER = [0.12, 0.22, 0.32, 0.42, 0.52, 0.62, 0.72, 0.84];
 
   function cssVar(name, fallback) {
     const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -38,97 +42,126 @@
     return x * x * (3 - 2 * x);
   }
 
-  /**
-   * dens:
-   *  0     empty
-   *  0–1   ink (mist / water / boat)
-   *  >1    sun (warm color)
-   */
+  function canalY(x) {
+    // Elliptical canal — compressed for short wide panel.
+    return 0.62 + Math.sin((x - 0.12) * Math.PI * 0.9) * 0.055;
+  }
+
+  function statue(x, y, cx, baseY, scale) {
+    const pedW = 0.016 * scale;
+    const pedH = 0.11 * scale;
+    const figH = 0.085 * scale;
+    const figW = 0.011 * scale;
+    let d = 0;
+    // Pedestal block
+    if (Math.abs(x - cx) < pedW && y < baseY && y > baseY - pedH) d = 0.95;
+    // Cap of pedestal
+    if (Math.abs(x - cx) < pedW * 1.25 && y < baseY - pedH && y > baseY - pedH - 0.014 * scale) {
+      d = 1;
+    }
+    // Figure
+    if (Math.abs(x - cx) < figW && y < baseY - pedH - 0.01 * scale && y > baseY - pedH - figH) {
+      d = 1;
+    }
+    // Head
+    if (Math.hypot(x - cx, y - (baseY - pedH - figH - 0.01 * scale)) < 0.011 * scale) d = 1;
+    return d;
+  }
+
+  function dome(x, y, cx, baseY, r) {
+    const dx = (x - cx) / r;
+    const dy = (baseY - y) / r;
+    if (dy < 0 || dy > 1.2) return 0;
+    const rim = Math.sqrt(Math.max(0, 1 - dx * dx));
+    return dy <= rim ? 0.85 + (1 - dy) * 0.15 : 0;
+  }
+
   function sample(x, y) {
-    // BIG sun — left-center, impossible to miss.
-    const sunX = 0.30;
-    const sunY = 0.30;
-    const sunR = 0.14;
-    const sd = Math.hypot((x - sunX) / sunR, (y - sunY) / (sunR * 0.95));
-    if (sd < 1) return 1.2 - sd * 0.2;
-    if (sd < 1.35) return 0.55 * (1.35 - sd);
+    let d = 0;
 
-    const horizon = 0.48;
-    const water = 0.52;
+    // Thin sky for short panel.
+    if (y < 0.08) return Math.abs(Math.sin(x * 40 + y * 20)) > 0.99 ? 0.15 : 0;
 
-    // Quiet upper mist (almost empty — no noise soup).
-    if (y < 0.16) return 0;
-
-    // Distant fog bank (right), soft but sparse.
-    if (y > 0.22 && y < horizon && x > 0.58) {
-      const band = (y - 0.22) / (horizon - 0.22);
-      const silhouette = Math.abs(Math.sin(x * 14 + 1.2));
-      if (silhouette > 0.78 && band > 0.35) return 0.28 + band * 0.25;
-      return band > 0.7 ? 0.1 : 0;
+    // Building facade band (compressed).
+    const roof = 0.22;
+    const groundBuild = 0.42;
+    if (y > roof && y < groundBuild) {
+      const win = Math.abs(Math.sin(x * 55)) > 0.55 && Math.abs(Math.sin(y * 70)) > 0.4 ? 0.2 : 0;
+      d = Math.max(d, 0.55 + win);
+      if (y < roof + 0.025) d = Math.max(d, 0.85);
+      // Portico arches near ground
+      if (y > groundBuild - 0.06 && Math.abs(Math.sin(x * 40)) > 0.7) d = Math.max(d, 0.35);
     }
 
-    // Horizon stroke.
-    if (Math.abs(y - horizon) < 0.01 && x > 0.08 && x < 0.95) return 0.45;
+    // Santa Giustina domes + campanile (right).
+    d = Math.max(d, dome(x, y, 0.76, 0.3, 0.075));
+    d = Math.max(d, dome(x, y, 0.85, 0.32, 0.06));
+    d = Math.max(d, dome(x, y, 0.8, 0.22, 0.05));
+    if (Math.abs(x - 0.9) < 0.012 && y < 0.4 && y > 0.1) d = Math.max(d, 1);
+    if (Math.abs(x - 0.9) < 0.022 && y < 0.12 && y > 0.07) d = Math.max(d, 0.9);
 
-    // Water + bold sun reflection pillar.
-    if (y >= water) {
-      const depth = (y - water) / (1 - water);
+    const cy = canalY(x);
+    const bankTop = cy - 0.06;
+    const bankBot = cy + 0.055;
+
+    // Grass / bank tops.
+    if (y > groundBuild && y < bankTop) {
+      d = Math.max(d, 0.2 + Math.abs(Math.sin(x * 30)) * 0.1);
+    }
+
+    // Canal water + shimmer.
+    if (y >= bankTop && y <= bankBot + 0.1) {
+      const depth = (y - bankTop) / 0.2;
       const ripple =
-        0.5 * Math.abs(Math.sin(x * 22 + state.t * 1.2 + y * 8)) +
-        0.5 * Math.abs(Math.sin(x * 7 - state.t * 0.7));
-      let d = 0.16 + ripple * 0.22 * (1 - depth * 0.4);
-
-      const rx = Math.abs(x - sunX);
-      if (rx < 0.045 + depth * 0.02) d = Math.max(d, 1.15 - depth * 0.2);
-      else if (rx < 0.1 + depth * 0.03) d = Math.max(d, 0.6 - depth * 0.12);
-
-      // BIG boat + rower (center-ish).
-      const boatX = 0.52;
-      const boatY = 0.70;
-      const bx = x - boatX;
-      const by = y - boatY;
-
-      // Hull
-      if (bx > -0.11 && bx < 0.12 && by > -0.015 && by < 0.035) {
-        const hull = 1 - Math.abs(bx) / 0.12;
-        if (hull > 0.12) d = Math.max(d, 1);
-      }
-      // Cabin / rower torso
-      if (Math.abs(bx + 0.01) < 0.02 && by > -0.08 && by < 0) d = Math.max(d, 1);
-      // Head
-      if (Math.hypot(bx + 0.01, by + 0.09) < 0.016) d = Math.max(d, 1);
-      // Oar
-      if (bx > -0.14 && bx < 0.08 && Math.abs(by + 0.025 - bx * 0.28) < 0.01) {
-        d = Math.max(d, 0.9);
-      }
-      // Wake
-      if (bx > 0.1 && bx < 0.2 && Math.abs(by - 0.012) < 0.015 + (bx - 0.1) * 0.08) {
-        d = Math.max(d, 0.35);
-      }
-
-      return d;
+        0.5 * Math.abs(Math.sin(x * 28 + state.t * 1.4)) +
+        0.5 * Math.abs(Math.sin(x * 9 - state.t * 0.8 + y * 12));
+      d = Math.max(d, 0.18 + ripple * 0.32 * (1 - depth * 0.4));
     }
 
-    // Fog strip between horizon and water.
-    if (y > horizon && y < water) {
-      return 0.08 + Math.abs(Math.sin(x * 5)) * 0.06;
+    // Statues along outer bank (closer / larger on left).
+    for (let i = 0; i < OUTER.length; i += 1) {
+      const sx = OUTER[i];
+      const scale = 1.2 - i * 0.07;
+      const base = bankTop - 0.005 - i * 0.003;
+      d = Math.max(d, statue(x, y, sx, base, Math.max(0.65, scale)));
     }
 
-    return 0;
+    // Statues along inner island bank.
+    for (let i = 0; i < INNER.length; i += 1) {
+      const sx = INNER[i];
+      const scale = 0.95 - i * 0.05;
+      const base = bankBot + 0.015 + Math.sin(i) * 0.003;
+      if (base < 0.94) d = Math.max(d, statue(x, y, sx, base, Math.max(0.6, scale)));
+    }
+
+    // Big foreground statue (left) — Prato signature.
+    d = Math.max(d, statue(x, y, 0.07, 0.88, 1.75));
+
+    // Soft reflection of nearby pedestals in water.
+    if (y > cy && y < cy + 0.09) {
+      const mirrorY = cy - (y - cy);
+      for (const sx of OUTER.slice(0, 4)) {
+        if (Math.abs(x - sx) < 0.012 && mirrorY < bankTop && mirrorY > bankTop - 0.08) {
+          d = Math.max(d, 0.35);
+        }
+      }
+    }
+
+    return d;
   }
 
   function drawFrame() {
     state.t += 0.016;
 
     const paper = cssVar("--pixel-paper", "#0a0c11");
-    const ink = cssVar("--pixel-ink", "#eef2fa");
+    const ink = cssVar("--pixel-ink", "#f0f3fa");
     const accent = cssVar("--pixel-accent", "#ff6b6b");
-    const sun = cssVar("--pixel-sun", "#ff6b4a");
+    const warm = cssVar("--pixel-sun", "#ff8a5c");
     const mono = cssVar("--pixel-mono", "JetBrains Mono, ui-monospace, monospace");
 
     ctx.fillStyle = paper;
     ctx.fillRect(0, 0, state.w, state.h);
-    ctx.font = `13px ${mono}`;
+    ctx.font = `12px ${mono}`;
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
 
@@ -139,10 +172,10 @@
         const nx = col / Math.max(1, cols - 1);
         const ny = row / Math.max(1, rows - 1);
         const dens = sample(nx, ny);
-        if (dens <= 0.05) continue;
+        if (dens <= 0.06) continue;
 
         const n = noise[row * cols + col];
-        const flicker = state.t * (0.28 + n * 0.35);
+        const flicker = state.t * (0.25 + n * 0.35);
         const px = col * CELL_W + CELL_W / 2;
         const py = row * CELL_H + CELL_H / 2;
         const dx = state.mx - px;
@@ -152,16 +185,17 @@
 
         let drawX = px;
         let drawY = py;
-        const pick = Math.floor(n * 11 + flicker * 1.4);
+        const pick = Math.floor(n * 11 + flicker * 1.3);
         let glyph;
         if (dens > 0.85) glyph = heavy[pick % heavy.length];
         else if (dens > 0.5) glyph = mid[pick % mid.length];
         else if (dens > 0.22) glyph = light[pick % light.length];
         else glyph = "·";
 
-        const isSun = dens > 1;
-        let color = isSun ? sun : ink;
-        let alpha = isSun ? 1 : Math.min(0.96, 0.32 + dens * 0.72);
+        // Warm tint on upper buildings / domes.
+        const isWarm = dens > 0.7 && ny < 0.5;
+        let color = isWarm ? warm : ink;
+        let alpha = Math.min(0.98, 0.3 + dens * 0.75);
 
         if (influence > 0.04) {
           drawX = px + dx * influence * PULL;
@@ -176,33 +210,32 @@
       }
     }
 
-    // Tip near boat.
-    const tipX = 0.52 * state.w;
-    const tipY = 0.62 * state.h;
+    const tipX = 0.78 * state.w;
+    const tipY = 0.2 * state.h;
     const near =
       interactive &&
-      Math.abs(state.mx - tipX) < 160 &&
-      state.my > tipY - 40 &&
-      state.my < state.h * 0.92;
+      Math.abs(state.mx - tipX) < 150 &&
+      state.my > tipY - 30 &&
+      state.my < tipY + 120;
     state.tipAlpha += ((near ? 1 : 0) - state.tipAlpha) * 0.18;
 
     if (state.tipAlpha > 0.02) {
-      const right = Math.min(state.w - 12, tipX + 100);
-      const titleY = Math.max(36, tipY);
-      const subY = titleY + 18;
-      const title = "MONET";
-      const sub = "impression, soleil levant";
+      const right = Math.min(state.w - 10, tipX + 40);
+      const titleY = Math.max(30, tipY);
+      const subY = titleY + 17;
+      const title = "PADOVA";
+      const sub = "prato della valle";
 
       ctx.textAlign = "right";
-      ctx.font = `700 16px ${mono}`;
+      ctx.font = `700 15px ${mono}`;
       const titleW = ctx.measureText(title).width;
       ctx.font = `11px ${mono}`;
       const subW = ctx.measureText(sub).width;
-      const pad = 10;
+      const pad = 9;
       const boxR = right + pad;
       const boxL = right - Math.max(titleW, subW) - pad;
-      const boxT = titleY - 16;
-      const boxB = subY + 8;
+      const boxT = titleY - 14;
+      const boxB = subY + 7;
 
       ctx.fillStyle = paper;
       ctx.globalAlpha = state.tipAlpha * 0.92;
@@ -212,7 +245,7 @@
       ctx.fillRect(boxL, boxT, 3, boxB - boxT);
 
       ctx.textBaseline = "alphabetic";
-      ctx.font = `700 16px ${mono}`;
+      ctx.font = `700 15px ${mono}`;
       ctx.fillStyle = ink;
       ctx.globalAlpha = state.tipAlpha;
       ctx.fillText(title, right, titleY);
