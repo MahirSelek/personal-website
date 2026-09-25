@@ -5,74 +5,17 @@
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  // Compact but recognizable equirectangular world landmask.
-  // '#' = land. Americas | Europe/Africa | Asia | Australia
-  const MAP = [
-    "........................................................................",
-    "..............#####.....................................................",
-    "............#########.......................######......................",
-    "...........###########....................##########....................",
-    "..........#############..................############...................",
-    ".........###############................##############..................",
-    "........########.########..............################.................",
-    ".......#######....#######.............##################................",
-    "......#######......######............#########..#########...............",
-    ".....######........#####............########.....########...............",
-    ".....#####.........####.............#######.......#######...............",
-    ".....####..........####.............######.........######...............",
-    ".....####..........#####............######..........#####...............",
-    ".....####..........######...........#######..........####...............",
-    "......###..........#######..........########............................",
-    ".......##..........########.........#########...........................",
-    "...................#########........##########..........................",
-    "....................#########.......###########.........................",
-    ".....................#########......############........................",
-    "......................#########.....#############.......................",
-    ".......................#########....##############......................",
-    "........................#########...###############.....................",
-    ".........................#########..################....................",
-    "..........................#########..###############....................",
-    "...........................########...##############....................",
-    "............................#######....#############....................",
-    ".............................######.....############....................",
-    "..............................#####......###########....................",
-    "...............................####.......##########....................",
-    "................................###........#########....................",
-    ".................................##.........########....................",
-    "..................................#..........#######....................",
-    "..............................................######....................",
-    ".....................###.......................#####....................",
-    "....................#####.......................####....................",
-    "...................#######.......................###....................",
-    "..................#########.......................##....................",
-    ".................###########.......................#....................",
-    ".................############...........................................",
-    ".................#############..........................................",
-    "..................############..........................................",
-    "...................###########..........................................",
-    "....................#########...........................................",
-    ".....................#######............................................",
-    "......................#####.............................................",
-    ".......................###..............................................",
-    "........................................................................",
-    "........................................................................",
-  ];
-
-  const MAP_W = MAP[0].length;
-  const MAP_H = MAP.length;
-
-  // Approximate Padua / Ankara markers on map UV (for pulse dots).
-  const MARKERS = [
-    { x: 0.545, y: 0.34, label: "PD" }, // Padua-ish (N Italy)
-    { x: 0.585, y: 0.36, label: "ANK" }, // Ankara-ish
-  ];
-
-  const CELL_W = 10;
-  const CELL_H = 14;
-  const MOUSE_RADIUS = 150;
-  const PULL = 0.35;
+  // Monet Impression, soleil levant — bold, readable glyph scene + mouse pull.
+  const CELL_W = 9;
+  const CELL_H = 13;
+  const MOUSE_RADIUS = 170;
+  const PULL = 0.42;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+
+  const heavy = ["█", "▓", "▒"];
+  const mid = ["▓", "▒", "░"];
+  const light = ["░", "·"];
 
   const state = { mx: -9999, my: -9999, t: 0, w: 0, h: 0, tipAlpha: 0 };
   let cols = 0;
@@ -80,8 +23,6 @@
   let noise = new Float32Array(0);
   let raf = 0;
   let visible = true;
-  // Map placement in canvas UV (keep clear silhouette, avoid edges).
-  let mapBox = { x0: 0.08, y0: 0.18, x1: 0.92, y1: 0.88 };
 
   function cssVar(name, fallback) {
     const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -97,68 +38,96 @@
     return x * x * (3 - 2 * x);
   }
 
-  function landAt(u, v) {
-    if (u < 0 || u > 1 || v < 0 || v > 1) return 0;
-    const c = Math.min(MAP_W - 1, Math.floor(u * MAP_W));
-    const r = Math.min(MAP_H - 1, Math.floor(v * MAP_H));
-    return MAP[r][c] === "#" ? 1 : 0;
-  }
+  /**
+   * dens:
+   *  0     empty
+   *  0–1   ink (mist / water / boat)
+   *  >1    sun (warm color)
+   */
+  function sample(x, y) {
+    // BIG sun — left-center, impossible to miss.
+    const sunX = 0.30;
+    const sunY = 0.30;
+    const sunR = 0.14;
+    const sd = Math.hypot((x - sunX) / sunR, (y - sunY) / (sunR * 0.95));
+    if (sd < 1) return 1.2 - sd * 0.2;
+    if (sd < 1.35) return 0.55 * (1.35 - sd);
 
-  // Soft edge for slightly less blocky silhouette while staying readable.
-  function landSample(u, v) {
-    const solid = landAt(u, v);
-    if (solid) return 1;
-    // Neighbor bleed for coast thickness.
-    const stepU = 1 / MAP_W;
-    const stepV = 1 / MAP_H;
-    let n = 0;
-    n += landAt(u - stepU, v);
-    n += landAt(u + stepU, v);
-    n += landAt(u, v - stepV);
-    n += landAt(u, v + stepV);
-    if (n >= 2) return 0.55;
-    if (n === 1) return 0.28;
+    const horizon = 0.48;
+    const water = 0.52;
+
+    // Quiet upper mist (almost empty — no noise soup).
+    if (y < 0.16) return 0;
+
+    // Distant fog bank (right), soft but sparse.
+    if (y > 0.22 && y < horizon && x > 0.58) {
+      const band = (y - 0.22) / (horizon - 0.22);
+      const silhouette = Math.abs(Math.sin(x * 14 + 1.2));
+      if (silhouette > 0.78 && band > 0.35) return 0.28 + band * 0.25;
+      return band > 0.7 ? 0.1 : 0;
+    }
+
+    // Horizon stroke.
+    if (Math.abs(y - horizon) < 0.01 && x > 0.08 && x < 0.95) return 0.45;
+
+    // Water + bold sun reflection pillar.
+    if (y >= water) {
+      const depth = (y - water) / (1 - water);
+      const ripple =
+        0.5 * Math.abs(Math.sin(x * 22 + state.t * 1.2 + y * 8)) +
+        0.5 * Math.abs(Math.sin(x * 7 - state.t * 0.7));
+      let d = 0.16 + ripple * 0.22 * (1 - depth * 0.4);
+
+      const rx = Math.abs(x - sunX);
+      if (rx < 0.045 + depth * 0.02) d = Math.max(d, 1.15 - depth * 0.2);
+      else if (rx < 0.1 + depth * 0.03) d = Math.max(d, 0.6 - depth * 0.12);
+
+      // BIG boat + rower (center-ish).
+      const boatX = 0.52;
+      const boatY = 0.70;
+      const bx = x - boatX;
+      const by = y - boatY;
+
+      // Hull
+      if (bx > -0.11 && bx < 0.12 && by > -0.015 && by < 0.035) {
+        const hull = 1 - Math.abs(bx) / 0.12;
+        if (hull > 0.12) d = Math.max(d, 1);
+      }
+      // Cabin / rower torso
+      if (Math.abs(bx + 0.01) < 0.02 && by > -0.08 && by < 0) d = Math.max(d, 1);
+      // Head
+      if (Math.hypot(bx + 0.01, by + 0.09) < 0.016) d = Math.max(d, 1);
+      // Oar
+      if (bx > -0.14 && bx < 0.08 && Math.abs(by + 0.025 - bx * 0.28) < 0.01) {
+        d = Math.max(d, 0.9);
+      }
+      // Wake
+      if (bx > 0.1 && bx < 0.2 && Math.abs(by - 0.012) < 0.015 + (bx - 0.1) * 0.08) {
+        d = Math.max(d, 0.35);
+      }
+
+      return d;
+    }
+
+    // Fog strip between horizon and water.
+    if (y > horizon && y < water) {
+      return 0.08 + Math.abs(Math.sin(x * 5)) * 0.06;
+    }
+
     return 0;
-  }
-
-  function toMapUV(nx, ny) {
-    const { x0, y0, x1, y1 } = mapBox;
-    if (nx < x0 || nx > x1 || ny < y0 || ny > y1) return null;
-    return {
-      u: (nx - x0) / (x1 - x0),
-      v: (ny - y0) / (y1 - y0),
-    };
   }
 
   function drawFrame() {
     state.t += 0.016;
 
     const paper = cssVar("--pixel-paper", "#0a0c11");
-    const ink = cssVar("--pixel-ink", "#f2f5fb");
+    const ink = cssVar("--pixel-ink", "#eef2fa");
     const accent = cssVar("--pixel-accent", "#ff6b6b");
+    const sun = cssVar("--pixel-sun", "#ff6b4a");
     const mono = cssVar("--pixel-mono", "JetBrains Mono, ui-monospace, monospace");
 
     ctx.fillStyle = paper;
     ctx.fillRect(0, 0, state.w, state.h);
-
-    // Soft lat/long grid so it reads as a map, not noise.
-    ctx.globalAlpha = 0.12;
-    ctx.strokeStyle = ink;
-    ctx.lineWidth = 1;
-    for (let g = 1; g < 6; g += 1) {
-      const gx = mapBox.x0 + ((mapBox.x1 - mapBox.x0) * g) / 6;
-      const gy = mapBox.y0 + ((mapBox.y1 - mapBox.y0) * g) / 6;
-      ctx.beginPath();
-      ctx.moveTo(gx * state.w, mapBox.y0 * state.h);
-      ctx.lineTo(gx * state.w, mapBox.y1 * state.h);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(mapBox.x0 * state.w, gy * state.h);
-      ctx.lineTo(mapBox.x1 * state.w, gy * state.h);
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-
     ctx.font = `13px ${mono}`;
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
@@ -169,20 +138,11 @@
       for (let col = 0; col < cols; col += 1) {
         const nx = col / Math.max(1, cols - 1);
         const ny = row / Math.max(1, rows - 1);
-        const mapped = toMapUV(nx, ny);
-
-        let dens = 0;
-        if (mapped) dens = landSample(mapped.u, mapped.v);
-
-        // Sparse ocean dots for depth (very light).
-        if (!dens && mapped) {
-          const n = noise[row * cols + col];
-          if (n > 0.965) dens = 0.12;
-        }
-
+        const dens = sample(nx, ny);
         if (dens <= 0.05) continue;
 
         const n = noise[row * cols + col];
+        const flicker = state.t * (0.28 + n * 0.35);
         const px = col * CELL_W + CELL_W / 2;
         const py = row * CELL_H + CELL_H / 2;
         const dx = state.mx - px;
@@ -192,21 +152,22 @@
 
         let drawX = px;
         let drawY = py;
-        let glyph = dens > 0.7 ? "█" : dens > 0.4 ? "▓" : dens > 0.2 ? "▒" : "·";
-        let color = ink;
-        let alpha = dens > 0.7 ? 0.95 : dens > 0.4 ? 0.8 : dens > 0.2 ? 0.55 : 0.25;
+        const pick = Math.floor(n * 11 + flicker * 1.4);
+        let glyph;
+        if (dens > 0.85) glyph = heavy[pick % heavy.length];
+        else if (dens > 0.5) glyph = mid[pick % mid.length];
+        else if (dens > 0.22) glyph = light[pick % light.length];
+        else glyph = "·";
 
-        // Subtle shimmer on land edges.
-        if (dens > 0.5) {
-          alpha = Math.min(1, alpha + Math.sin(state.t * 2 + n * 8) * 0.04);
-        }
+        const isSun = dens > 1;
+        let color = isSun ? sun : ink;
+        let alpha = isSun ? 1 : Math.min(0.96, 0.32 + dens * 0.72);
 
         if (influence > 0.04) {
           drawX = px + dx * influence * PULL;
           drawY = py + dy * influence * PULL;
           color = accent;
           alpha = Math.min(1, 0.7 + influence * 0.35);
-          if (dens > 0.5) glyph = "█";
         }
 
         ctx.fillStyle = color;
@@ -215,39 +176,22 @@
       }
     }
 
-    // Pulse markers for Padua & Ankara.
-    for (const m of MARKERS) {
-      const mx = mapBox.x0 + m.x * (mapBox.x1 - mapBox.x0);
-      const my = mapBox.y0 + m.y * (mapBox.y1 - mapBox.y0);
-      const cx = mx * state.w;
-      const cy = my * state.h;
-      const pulse = 0.55 + Math.sin(state.t * 3 + m.x * 10) * 0.35;
-      ctx.globalAlpha = pulse;
-      ctx.fillStyle = accent;
-      ctx.font = `700 11px ${mono}`;
-      ctx.fillText("●", cx, cy);
-      ctx.globalAlpha = pulse * 0.9;
-      ctx.font = `600 10px ${mono}`;
-      ctx.textAlign = "left";
-      ctx.fillText(m.label, cx + 8, cy);
-      ctx.textAlign = "center";
-    }
-
-    // Tip when hovering Europe area.
-    const tipX = (mapBox.x0 + 0.56 * (mapBox.x1 - mapBox.x0)) * state.w;
-    const tipY = (mapBox.y0 + 0.32 * (mapBox.y1 - mapBox.y0)) * state.h;
+    // Tip near boat.
+    const tipX = 0.52 * state.w;
+    const tipY = 0.62 * state.h;
     const near =
       interactive &&
-      Math.abs(state.mx - tipX) < 180 &&
-      Math.abs(state.my - tipY) < 120;
+      Math.abs(state.mx - tipX) < 160 &&
+      state.my > tipY - 40 &&
+      state.my < state.h * 0.92;
     state.tipAlpha += ((near ? 1 : 0) - state.tipAlpha) * 0.18;
 
     if (state.tipAlpha > 0.02) {
-      const right = Math.min(state.w - 12, tipX + 70);
-      const titleY = Math.max(34, tipY - 8);
+      const right = Math.min(state.w - 12, tipX + 100);
+      const titleY = Math.max(36, tipY);
       const subY = titleY + 18;
-      const title = "WORLD";
-      const sub = "ankara → padova · research path";
+      const title = "MONET";
+      const sub = "impression, soleil levant";
 
       ctx.textAlign = "right";
       ctx.font = `700 16px ${mono}`;
@@ -298,13 +242,6 @@
     const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
     const width = Math.max(40, Math.floor(canvas.parentElement.offsetWidth || window.innerWidth));
     const height = Math.max(40, Math.floor(canvas.parentElement.offsetHeight || window.innerHeight));
-
-    // On narrow heroes, give map more vertical room.
-    if (width / height < 1.7) {
-      mapBox = { x0: 0.04, y0: 0.12, x1: 0.96, y1: 0.92 };
-    } else {
-      mapBox = { x0: 0.08, y0: 0.16, x1: 0.94, y1: 0.9 };
-    }
 
     state.w = width;
     state.h = height;
