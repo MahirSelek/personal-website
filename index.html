@@ -8,30 +8,24 @@
       name="description"
       content="Portfolio of Mahir Selek, Data Scientist, AI Engineer and PhD Candidate in AI-driven technologies."
     />
+    <meta name="color-scheme" content="dark" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      rel="preconnect"
-      href="https://fonts.googleapis.com"
-    />
-    <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=9" />
+    <link rel="stylesheet" href="./styles.css?v=11" />
   </head>
   <body>
     <div class="page">
       <header class="hero">
+        <div class="pixel-stage" aria-hidden="true">
+          <canvas id="pixel-field"></canvas>
+        </div>
         <div class="hero-photo">
           <div class="photo-frame">
-            <img
-              src="./assests/pp.png"
-              alt="Portrait of Mahir Selek"
-            />
+            <img src="./assests/pp.png" alt="Portrait of Mahir Selek" />
           </div>
         </div>
         <div class="hero-content">
@@ -106,7 +100,10 @@
         </div>
         <div class="footer-column">
           <h3>Core expertise</h3>
-          <p>LLMs · NLP · Model compression · MLOps · Data-driven products · LLM Evaluation · Cloud Computing</p>
+          <p>
+            LLMs · NLP · Model compression · MLOps · Data-driven products · LLM Evaluation · Cloud
+            Computing
+          </p>
         </div>
         <div class="footer-column footer-links">
           <h3>Online</h3>
@@ -122,6 +119,6 @@
     </div>
 
     <script src="./script.js?v=8"></script>
+    <script src="./pixel-field.js?v=1"></script>
   </body>
 </html>
-
