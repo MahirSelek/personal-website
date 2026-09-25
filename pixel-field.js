@@ -5,38 +5,22 @@
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  const CELL_W = 8;
-  const CELL_H = 13;
-  const MOUSE_RADIUS = 160;
-  const PULL = 0.38;
+  // Monet — Impression, soleil levant (simplified readable glyph field)
+  const CELL_W = 9;
+  const CELL_H = 14;
+  const MOUSE_RADIUS = 170;
+  const PULL = 0.4;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
-
-  // Padua silhouette anchors (normalized x,y).
-  // Left→right: Specola tower, Palazzo della Ragione, Basilica di Sant'Antonio domes,
-  // Prato della Valle ellipse + statues, low canal banks.
-  const groundY = 0.78;
-  const canalY = 0.86;
 
   const heavy = ["█", "▓", "▒"];
   const mid = ["▓", "▒", "░"];
   const light = ["░", "·", "∙"];
 
-  const birdsAll = [
-    { y: 0.12, speed: 0.032, phase: 0.2, x0: -0.1 },
-    { y: 0.2, speed: 0.024, phase: 1.1, x0: -0.42 },
-    { y: 0.08, speed: 0.038, phase: 2.0, x0: -0.7 },
-  ];
-  const birdFrames = [
-    ["‿", "⌒", "‿"],
-    ["╲", "_", "╱"],
-  ];
-
   const state = { mx: -9999, my: -9999, t: 0, w: 0, h: 0, tipAlpha: 0 };
   let cols = 0;
   let rows = 0;
   let noise = new Float32Array(0);
-  let birds = birdsAll;
   let raf = 0;
   let visible = true;
 
@@ -49,139 +33,103 @@
     return Math.max(0, Math.min(1, v));
   }
 
-  function smoothstep(t, edge) {
-    const x = clamp01(1 - t / edge);
+  function smoothstep(dist, edge) {
+    const x = clamp01(1 - dist / edge);
     return x * x * (3 - 2 * x);
   }
 
-  function rect(x, y, cx, cy, w, h) {
-    return Math.abs(x - cx) < w / 2 && y > cy - h && y < cy;
-  }
+  // Density map of Monet sunrise: sun + mist + boat + water ripples.
+  function sample(x, y) {
+    const horizon = 0.46;
+    const waterTop = 0.5;
 
-  function dome(x, y, cx, baseY, radius) {
-    const dx = (x - cx) / radius;
-    const dy = (baseY - y) / radius;
-    if (dy < 0 || dy > 1.15) return 0;
-    const rim = Math.sqrt(Math.max(0, 1 - dx * dx));
-    if (dy <= rim) return 0.75 + (1 - dy) * 0.25;
+    // Soft mist / empty sky (sparse dots only).
+    if (y < 0.18) {
+      return Math.abs(Math.sin(x * 41 + y * 17)) > 0.992 ? 0.25 : 0;
+    }
+
+    // Rising sun disk (left-center, classic Impression Sunrise placement).
+    const sunX = 0.34;
+    const sunY = 0.34;
+    const sunR = 0.085;
+    const sunDist = Math.hypot((x - sunX) / sunR, (y - sunY) / (sunR * 0.92));
+    if (sunDist < 1) {
+      return 1.15 - sunDist * 0.35; // mark as "sun" with dens > 1 for color
+    }
+    // Soft corona.
+    if (sunDist < 1.55) {
+      return Math.max(0, 0.45 * (1.55 - sunDist));
+    }
+
+    // Distant misty harbor silhouettes (right horizon band).
+    if (y > 0.28 && y < horizon) {
+      const band = (y - 0.28) / (horizon - 0.28);
+      const cranes =
+        Math.abs(Math.sin(x * 18 + 0.4)) > 0.72 && x > 0.55 && x < 0.95
+          ? 0.35 + band * 0.4
+          : 0;
+      const lowMist = x > 0.48 && band > 0.55 ? 0.18 + Math.abs(Math.sin(x * 9)) * 0.12 : 0;
+      return Math.max(cranes, lowMist);
+    }
+
+    // Horizon line.
+    if (Math.abs(y - horizon) < 0.008 && x > 0.05 && x < 0.98) return 0.55;
+
+    // Water body + sun reflection column.
+    if (y > waterTop) {
+      const depth = (y - waterTop) / (1 - waterTop);
+      const ripple =
+        Math.abs(Math.sin(x * 26 + state.t * 1.3 + y * 10)) * 0.5 +
+        Math.abs(Math.sin(x * 9 - state.t * 0.8)) * 0.5;
+      let water = 0.18 + ripple * 0.28 * (1 - depth * 0.35);
+
+      // Vertical shimmer of the sun on water (Monet signature).
+      const reflectX = Math.abs(x - sunX);
+      const reflectCore = reflectX < 0.035 + depth * 0.02;
+      const reflectSoft = reflectX < 0.09 + depth * 0.03;
+      if (reflectCore) water = Math.max(water, 1.05 - depth * 0.25);
+      else if (reflectSoft) water = Math.max(water, 0.55 - depth * 0.15);
+
+      // Small rowboat + rower silhouette (lower-left of center).
+      const boatX = 0.46;
+      const boatY = 0.68;
+      const bx = x - boatX;
+      const by = y - boatY;
+
+      // Hull (crescent / flat boat shape).
+      if (bx > -0.07 && bx < 0.08 && by > -0.01 && by < 0.025) {
+        const hull = 1 - Math.abs(bx + 0.01) / 0.08;
+        if (hull > 0.15) water = Math.max(water, 0.95);
+      }
+      // Rower body.
+      if (Math.abs(bx + 0.01) < 0.012 && by > -0.055 && by < 0) water = Math.max(water, 1);
+      // Oar.
+      if (bx > -0.09 && bx < 0.05 && Math.abs(by + 0.02 - bx * 0.35) < 0.008) {
+        water = Math.max(water, 0.85);
+      }
+      // Tiny wake.
+      if (bx > 0.06 && bx < 0.14 && Math.abs(by - 0.01) < 0.012 + (bx - 0.06) * 0.1) {
+        water = Math.max(water, 0.4);
+      }
+
+      return water;
+    }
+
+    // Between sun band and water: soft fog.
+    if (y >= horizon && y <= waterTop) {
+      return 0.12 + Math.abs(Math.sin(x * 7 + y * 20)) * 0.08;
+    }
+
     return 0;
-  }
-
-  function spire(x, y, cx, baseY, height, halfW) {
-    if (y > baseY || y < baseY - height) return 0;
-    const t = (baseY - y) / height;
-    const w = halfW * (1 - t * 0.85);
-    return Math.abs(x - cx) < w ? 0.9 - t * 0.2 : 0;
-  }
-
-  // Unique Padua density field (not a bridge copy).
-  function densityAt(x, y) {
-    // Night sky with faint stars.
-    if (y < 0.42) {
-      const star = Math.abs(Math.sin(x * 97 + y * 53));
-      return star > 0.985 ? 0.35 : 0;
-    }
-
-    // Canal water under the city.
-    if (y > canalY) {
-      const wave = Math.abs(Math.sin(x * 28 + state.t * 1.4) * 0.5 + Math.sin(x * 11 + y * 20) * 0.5);
-      const depth = (y - canalY) / (1 - canalY);
-      return 0.22 + wave * 0.35 * (1 - depth * 0.45);
-    }
-
-    // Ground / embankment.
-    if (y > groundY) return 0.55;
-
-    let d = 0;
-
-    // Specola (observatory) tower — left landmark.
-    if (rect(x, y, 0.14, groundY, 0.055, 0.34)) d = Math.max(d, 0.95);
-    if (rect(x, y, 0.14, groundY - 0.34, 0.075, 0.05)) d = Math.max(d, 1);
-    d = Math.max(d, spire(x, y, 0.14, groundY - 0.39, 0.1, 0.018));
-
-    // Low academic/residential blocks.
-    for (const b of [
-      [0.24, 0.12, 0.16],
-      [0.33, 0.1, 0.2],
-      [0.92, 0.09, 0.14],
-    ]) {
-      if (rect(x, y, b[0], groundY, b[1], b[2])) {
-        const windows = Math.abs(Math.sin((x + y) * 70)) > 0.55 ? 0.15 : 0;
-        d = Math.max(d, 0.55 + windows);
-      }
-    }
-
-    // Palazzo della Ragione — long roof mass in the center-left.
-    if (rect(x, y, 0.42, groundY, 0.2, 0.2)) d = Math.max(d, 0.8);
-    // Triangular roof crest.
-    if (x > 0.32 && x < 0.52 && y < groundY - 0.2) {
-      const local = (x - 0.32) / 0.2;
-      const roofH = 0.1 * (1 - Math.abs(local - 0.5) * 2);
-      if (y > groundY - 0.2 - roofH) d = Math.max(d, 0.92);
-    }
-
-    // Basilica di Sant'Antonio — multi-dome composition (Padua signature).
-    const basilicaBase = groundY - 0.08;
-    d = Math.max(d, dome(x, y, 0.63, basilicaBase, 0.085));
-    d = Math.max(d, dome(x, y, 0.7, basilicaBase - 0.02, 0.07));
-    d = Math.max(d, dome(x, y, 0.76, basilicaBase, 0.08));
-    d = Math.max(d, dome(x, y, 0.69, basilicaBase - 0.12, 0.05)); // central higher dome
-    if (rect(x, y, 0.7, groundY, 0.22, 0.16)) d = Math.max(d, 0.7);
-    // Twin facade towers.
-    if (rect(x, y, 0.6, groundY, 0.028, 0.28)) d = Math.max(d, 0.95);
-    if (rect(x, y, 0.8, groundY, 0.028, 0.28)) d = Math.max(d, 0.95);
-    d = Math.max(d, spire(x, y, 0.6, groundY - 0.28, 0.08, 0.014));
-    d = Math.max(d, spire(x, y, 0.8, groundY - 0.28, 0.08, 0.014));
-
-    // Prato della Valle — elliptical ring of statues (right-center).
-    const ex = (x - 0.88) / 0.1;
-    const ey = (y - (groundY - 0.07)) / 0.05;
-    const ellipse = ex * ex + ey * ey;
-    if (ellipse > 0.55 && ellipse < 0.95 && y < groundY) d = Math.max(d, 0.55);
-    // Statue dots around the ellipse.
-    for (let i = 0; i < 10; i += 1) {
-      const a = (i / 10) * Math.PI * 2;
-      const sx = 0.88 + Math.cos(a) * 0.09;
-      const sy = groundY - 0.07 + Math.sin(a) * 0.045;
-      if (Math.hypot(x - sx, y - sy) < 0.008) d = Math.max(d, 1);
-      if (Math.abs(x - sx) < 0.005 && y > sy && y < groundY - 0.01) d = Math.max(d, 0.7);
-    }
-
-    // Soft canal reflections of tallest volumes.
-    if (y > canalY && y < canalY + 0.08) {
-      const mirrorY = canalY - (y - canalY);
-      const reflected = densityAt(x, Math.min(groundY - 0.01, mirrorY));
-      if (reflected > 0.4) d = Math.max(d, reflected * 0.35);
-    }
-
-    return d;
-  }
-
-  function birdMap(time, c, r, flock) {
-    const map = new Map();
-    for (const bird of flock) {
-      let x = (bird.x0 + bird.speed * time) % 1.25;
-      if (x < 0) x += 1.25;
-      if (x > 1.05 || x < -0.05) continue;
-      const frame = Math.floor(time * 4 + bird.phase) % 2;
-      const glyphs = birdFrames[frame];
-      const col = Math.floor(x * (c - 1));
-      const row = Math.floor(bird.y * (r - 1));
-      for (let i = -1; i <= 1; i += 1) {
-        const cc = col + i;
-        if (cc < 0 || cc >= c) continue;
-        map.set(`${cc},${row}`, glyphs[i + 1]);
-      }
-    }
-    return map;
   }
 
   function drawFrame() {
     state.t += 0.016;
 
-    const paper = cssVar("--pixel-paper", "#0b0d12");
-    const ink = cssVar("--pixel-ink", "#f2f5fb");
-    const accent = cssVar("--pixel-accent", "#ffd93d");
+    const paper = cssVar("--pixel-paper", "#0a0c11");
+    const ink = cssVar("--pixel-ink", "#eef2fa");
+    const accent = cssVar("--pixel-accent", "#ff6b6b");
+    const sunColor = cssVar("--pixel-sun", "#ff7a4d");
     const mono = cssVar("--pixel-mono", "JetBrains Mono, ui-monospace, monospace");
 
     ctx.fillStyle = paper;
@@ -191,19 +139,16 @@
     ctx.textAlign = "center";
 
     const interactive = !coarsePointer && state.mx > -1000;
-    const birdsNow = birdMap(state.t, cols, rows, birds);
 
     for (let row = 0; row < rows; row += 1) {
       for (let col = 0; col < cols; col += 1) {
         const nx = col / Math.max(1, cols - 1);
         const ny = row / Math.max(1, rows - 1);
-        const key = `${col},${row}`;
-        const birdGlyph = birdsNow.get(key);
-        const dens = densityAt(nx, ny);
-        if (dens === 0 && !birdGlyph) continue;
+        const dens = sample(nx, ny);
+        if (dens <= 0.04) continue;
 
         const n = noise[row * cols + col];
-        const flicker = state.t * (0.35 + n * 0.45);
+        const flicker = state.t * (0.3 + n * 0.4);
         const px = col * CELL_W + CELL_W / 2;
         const py = row * CELL_H + CELL_H / 2;
         const dx = state.mx - px;
@@ -213,29 +158,22 @@
 
         let drawX = px;
         let drawY = py;
+        const pick = Math.floor(n * 13 + flicker * 1.5);
         let glyph;
-        let color = ink;
-        let alpha;
+        if (dens > 0.9) glyph = heavy[pick % heavy.length];
+        else if (dens > 0.55) glyph = mid[pick % mid.length];
+        else if (dens > 0.28) glyph = light[pick % light.length];
+        else glyph = "·";
 
-        if (birdGlyph) {
-          glyph = birdGlyph;
-          color = ink;
-          alpha = 0.8;
-        } else {
-          const pick = Math.floor(n * 13 + flicker * 1.6);
-          if (dens > 0.85) glyph = heavy[pick % heavy.length];
-          else if (dens > 0.55) glyph = mid[pick % mid.length];
-          else if (dens > 0.25) glyph = light[pick % light.length];
-          else glyph = "·";
-          // Stronger presence than before.
-          alpha = Math.min(0.98, 0.35 + dens * 0.7);
-        }
+        const isSun = dens > 1;
+        let color = isSun ? sunColor : ink;
+        let alpha = isSun ? 0.98 : Math.min(0.95, 0.28 + dens * 0.75);
 
         if (influence > 0.04) {
           drawX = px + dx * influence * PULL;
           drawY = py + dy * influence * PULL;
           color = accent;
-          alpha = Math.min(1, (birdGlyph ? 0.85 : 0.7) + influence * 0.35);
+          alpha = Math.min(1, 0.65 + influence * 0.4);
         }
 
         ctx.fillStyle = color;
@@ -244,22 +182,22 @@
       }
     }
 
-    // Tip near Basilica cluster.
-    const tipX = 0.7 * state.w;
-    const tipY = (groundY - 0.34) * state.h;
+    // Tip near the boat.
+    const tipX = 0.46 * state.w;
+    const tipY = 0.62 * state.h;
     const near =
       interactive &&
-      Math.abs(state.mx - tipX) < 170 &&
-      state.my > tipY - 40 &&
-      state.my < state.h * 0.92;
+      Math.abs(state.mx - tipX) < 150 &&
+      state.my > tipY - 30 &&
+      state.my < state.h * 0.9;
     state.tipAlpha += ((near ? 1 : 0) - state.tipAlpha) * 0.18;
 
     if (state.tipAlpha > 0.02) {
-      const right = Math.min(state.w - 10, tipX + 8);
-      const titleY = Math.max(34, tipY);
+      const right = Math.min(state.w - 12, tipX + 90);
+      const titleY = Math.max(36, tipY - 10);
       const subY = titleY + 18;
-      const title = "PADOVA";
-      const sub = "basilica · specola · prato della valle";
+      const title = "MONET";
+      const sub = "impression, soleil levant";
 
       ctx.textAlign = "right";
       ctx.font = `700 16px ${mono}`;
@@ -273,7 +211,7 @@
       const boxB = subY + 8;
 
       ctx.fillStyle = paper;
-      ctx.globalAlpha = state.tipAlpha * 0.9;
+      ctx.globalAlpha = state.tipAlpha * 0.92;
       ctx.fillRect(boxL, boxT, boxR - boxL, boxB - boxT);
       ctx.fillStyle = accent;
       ctx.globalAlpha = state.tipAlpha;
@@ -311,7 +249,6 @@
     const width = Math.max(40, Math.floor(canvas.parentElement.offsetWidth || window.innerWidth));
     const height = Math.max(40, Math.floor(canvas.parentElement.offsetHeight || window.innerHeight));
 
-    birds = width / height < 1.5 ? birdsAll.slice(0, 2) : birdsAll;
     state.w = width;
     state.h = height;
     canvas.width = Math.floor(width * dpr);

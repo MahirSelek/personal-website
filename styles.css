@@ -13,8 +13,9 @@
   --shadow-offset: 6px;
   --radius: 16px;
   --pixel-paper: #0a0c11;
-  --pixel-ink: #f4f7ff;
-  --pixel-accent: #ffd93d;
+  --pixel-ink: #eef2fa;
+  --pixel-accent: #ff6b6b;
+  --pixel-sun: #ff7a4d;
   --pixel-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
@@ -90,7 +91,7 @@ body {
   cursor: crosshair;
 }
 
-/* Keep pixel city readable; only a light veil on the text side. */
+/* Keep Monet scene readable — very light veil only. */
 .hero::after {
   content: "";
   position: absolute;
@@ -99,9 +100,9 @@ body {
   pointer-events: none;
   background: linear-gradient(
     105deg,
-    rgba(10, 12, 17, 0.12) 0%,
-    rgba(10, 12, 17, 0.05) 42%,
-    rgba(10, 12, 17, 0.2) 100%
+    rgba(10, 12, 17, 0.08) 0%,
+    rgba(10, 12, 17, 0.02) 48%,
+    rgba(10, 12, 17, 0.14) 100%
   );
 }
 
