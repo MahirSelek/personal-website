@@ -416,20 +416,18 @@ function fillStage(key) {
   const contentEl = document.getElementById("detail-content");
   if (!titleEl || !contentEl) return false;
 
-  contentEl.classList.add("is-switching");
-  window.setTimeout(() => {
-    titleEl.textContent = section.title;
-    contentEl.innerHTML = section.html;
-    contentEl.classList.remove("is-switching");
-  }, 90);
-
+  titleEl.textContent = section.title;
+  contentEl.innerHTML = section.html;
+  contentEl.classList.remove("is-switching");
   setActiveCard(key);
   return true;
 }
 
+const DIVE_MS = 520;
 let closeTimer = 0;
-let scrollArmed = false;
-let lastScrollY = window.scrollY;
+let openTimer = 0;
+let lockNav = false;
+let wheelCarry = 0;
 
 function getExplorer() {
   return document.getElementById("explorer");
@@ -439,46 +437,55 @@ function getStage() {
   return document.getElementById("explorer-stage");
 }
 
+function getStagePanel() {
+  return document.getElementById("stage-panel");
+}
+
 function isExplorerOpen() {
   const explorer = getExplorer();
   return Boolean(explorer?.classList.contains("is-open") && !explorer.classList.contains("is-closing"));
 }
 
 function openSection(key, { pushHash = true } = {}) {
+  if (lockNav) return;
   if (!fillStage(key)) return;
 
   const explorer = getExplorer();
   const stage = getStage();
+  const panel = getStagePanel();
   if (!explorer || !stage) return;
 
+  lockNav = true;
   window.clearTimeout(closeTimer);
+  window.clearTimeout(openTimer);
+  wheelCarry = 0;
+
   explorer.classList.remove("is-closing");
+  // Force reflow so reopen always animates cleanly.
+  void stage.offsetWidth;
   explorer.classList.add("is-open");
   stage.setAttribute("aria-hidden", "false");
+  if (panel) panel.scrollTop = 0;
 
   if (pushHash) {
     window.history.replaceState(null, "", `#${key}`);
   }
 
-  window.requestAnimationFrame(() => {
-    explorer.scrollIntoView({ behavior: "smooth", block: "start" });
-    // Wait until settle before arming scroll-to-close.
-    window.setTimeout(() => {
-      scrollArmed = true;
-      lastScrollY = window.scrollY;
-    }, 700);
-  });
+  openTimer = window.setTimeout(() => {
+    lockNav = false;
+  }, DIVE_MS + 40);
 }
 
 function closeSection({ clearHash = true } = {}) {
   const explorer = getExplorer();
   const stage = getStage();
   if (!explorer || !stage) return;
-  if (!explorer.classList.contains("is-open") && !explorer.classList.contains("is-closing")) {
+  if (!explorer.classList.contains("is-open") || explorer.classList.contains("is-closing")) {
     return;
   }
 
-  scrollArmed = false;
+  lockNav = true;
+  wheelCarry = 0;
   explorer.classList.add("is-closing");
   explorer.classList.remove("is-open");
   stage.setAttribute("aria-hidden", "true");
@@ -491,30 +498,45 @@ function closeSection({ clearHash = true } = {}) {
   window.clearTimeout(closeTimer);
   closeTimer = window.setTimeout(() => {
     explorer.classList.remove("is-closing");
-  }, 650);
+    lockNav = false;
+  }, DIVE_MS + 40);
 }
 
-function onScrollClose() {
-  if (!scrollArmed || !isExplorerOpen()) return;
+function onStageWheel(e) {
+  if (!isExplorerOpen() || lockNav) return;
 
+  const panel = getStagePanel();
+  if (!panel) return;
+
+  const delta = e.deltaY;
+  const atTop = panel.scrollTop <= 1;
+
+  // Pulling up at the top of content → return to sections.
+  if (atTop && delta < 0) {
+    wheelCarry += -delta;
+    if (wheelCarry > 48) {
+      e.preventDefault();
+      closeSection();
+    }
+    return;
+  }
+
+  wheelCarry = 0;
+}
+
+function onPageScrollClose() {
+  if (!isExplorerOpen() || lockNav) return;
   const explorer = getExplorer();
   if (!explorer) return;
-
-  const y = window.scrollY;
-  const scrollingUp = y < lastScrollY - 2;
-  lastScrollY = y;
-
-  if (!scrollingUp) return;
-
-  const top = explorer.getBoundingClientRect().top;
-  // Scrolled up enough that the section deck / hero zone is coming back.
-  if (top > 72) {
+  // Soft fallback if the page itself scrolls (taller mobile layouts).
+  if (explorer.getBoundingClientRect().top > 90) {
     closeSection();
   }
 }
 
 function initExplorer() {
   const cards = document.querySelectorAll(".card[data-section]");
+  const panel = getStagePanel();
 
   cards.forEach((card) => {
     card.addEventListener("click", () => {
@@ -523,7 +545,8 @@ function initExplorer() {
     });
   });
 
-  window.addEventListener("scroll", onScrollClose, { passive: true });
+  panel?.addEventListener("wheel", onStageWheel, { passive: false });
+  window.addEventListener("scroll", onPageScrollClose, { passive: true });
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeSection();
