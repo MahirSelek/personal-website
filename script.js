@@ -14,8 +14,8 @@ const sections = {
       </p>
       <p>
         My PhD looks at AI for Italian cultural heritage: how models and careful product design can
-        make collections easier to explore without losing scholarly rigor. Outside that, I keep
-        iterating on agentic workflows, LLM evaluation, and cloud-backed ML products.
+        make collections easier to explore without losing scholarly rigor. Away from the screen I
+        play guitar, read a lot, and keep up with photography.
       </p>
     `,
   },
