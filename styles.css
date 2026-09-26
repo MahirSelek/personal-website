@@ -280,8 +280,9 @@ body {
 .explorer-viewport {
   position: relative;
   min-height: 420px;
-  overflow: hidden;
+  overflow: visible;
   border-radius: var(--radius);
+  padding: 8px 16px 22px 12px;
 }
 
 .explorer-deck,
@@ -289,8 +290,9 @@ body {
   width: 100%;
   transition:
     transform var(--dive-ms) cubic-bezier(0.22, 1, 0.36, 1),
-    opacity calc(var(--dive-ms) * 0.85) ease;
-  will-change: transform, opacity;
+    opacity calc(var(--dive-ms) * 0.85) ease,
+    filter calc(var(--dive-ms) * 0.85) ease;
+  will-change: transform, opacity, filter;
 }
 
 .explorer-deck {
@@ -298,10 +300,12 @@ body {
   z-index: 1;
   transform: translateY(0);
   opacity: 1;
+  filter: none;
 }
 
 .deck-hint {
-  margin: 0 0 12px;
+  margin: 0 0 14px;
+  padding-left: 2px;
   font-size: 0.78rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -419,7 +423,7 @@ body {
   border-radius: var(--radius);
   border: var(--border-width) solid var(--border);
   background: #121722;
-  padding: 18px 22px 24px;
+  padding: 22px 22px 24px;
   box-shadow: 8px 8px 0 #000;
   position: relative;
   display: flex;
@@ -441,34 +445,6 @@ body {
   transform: rotate(-2deg);
   box-shadow: 2px 2px 0 #000;
   opacity: 0.85;
-}
-
-.stage-toolbar {
-  display: flex;
-  align-items: center;
-  margin-bottom: 2px;
-}
-
-.stage-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 12px;
-  border-radius: 999px;
-  border: 2px solid var(--border);
-  background: #1c2433;
-  color: #fff;
-  font: inherit;
-  font-size: 0.86rem;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 3px 3px 0 #000;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
-.stage-back:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 #000;
 }
 
 .detail-header h2 {
@@ -594,20 +570,45 @@ body {
 }
 
 /* Open state — scroll-like dive */
+.explorer.is-open .explorer-viewport {
+  overflow: hidden;
+  padding: 0;
+  min-height: min(72vh, 780px);
+}
+
 .explorer.is-open .explorer-deck {
   transform: translateY(-18%) scale(0.96);
   opacity: 0;
   pointer-events: none;
+  filter: blur(2px);
 }
 
 .explorer.is-open .explorer-stage {
   transform: translateY(0);
   opacity: 1;
   pointer-events: auto;
+  filter: none;
 }
 
-.explorer.is-open .explorer-viewport {
-  min-height: min(72vh, 780px);
+/* Scroll-up diminish — stage melts away, deck returns */
+.explorer.is-closing .explorer-stage {
+  transform: translateY(14%) scale(0.92);
+  opacity: 0;
+  filter: blur(6px) saturate(0.7);
+  pointer-events: none;
+}
+
+.explorer.is-closing .explorer-deck {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+  filter: none;
+}
+
+.explorer.is-closing .explorer-viewport {
+  overflow: visible;
+  padding: 8px 16px 22px 12px;
+  min-height: 420px;
 }
 
 .footer {
@@ -722,8 +723,7 @@ body {
   .explorer-stage,
   .card,
   .pill,
-  .detail-content,
-  .stage-back {
+  .detail-content {
     transition: none !important;
   }
 

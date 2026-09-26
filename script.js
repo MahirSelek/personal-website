@@ -427,13 +427,32 @@ function fillStage(key) {
   return true;
 }
 
+let closeTimer = 0;
+let scrollArmed = false;
+let lastScrollY = window.scrollY;
+
+function getExplorer() {
+  return document.getElementById("explorer");
+}
+
+function getStage() {
+  return document.getElementById("explorer-stage");
+}
+
+function isExplorerOpen() {
+  const explorer = getExplorer();
+  return Boolean(explorer?.classList.contains("is-open") && !explorer.classList.contains("is-closing"));
+}
+
 function openSection(key, { pushHash = true } = {}) {
   if (!fillStage(key)) return;
 
-  const explorer = document.getElementById("explorer");
-  const stage = document.getElementById("explorer-stage");
+  const explorer = getExplorer();
+  const stage = getStage();
   if (!explorer || !stage) return;
 
+  window.clearTimeout(closeTimer);
+  explorer.classList.remove("is-closing");
   explorer.classList.add("is-open");
   stage.setAttribute("aria-hidden", "false");
 
@@ -441,17 +460,26 @@ function openSection(key, { pushHash = true } = {}) {
     window.history.replaceState(null, "", `#${key}`);
   }
 
-  // Scroll so the dive happens in view — feels continuous.
   window.requestAnimationFrame(() => {
     explorer.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Wait until settle before arming scroll-to-close.
+    window.setTimeout(() => {
+      scrollArmed = true;
+      lastScrollY = window.scrollY;
+    }, 700);
   });
 }
 
 function closeSection({ clearHash = true } = {}) {
-  const explorer = document.getElementById("explorer");
-  const stage = document.getElementById("explorer-stage");
+  const explorer = getExplorer();
+  const stage = getStage();
   if (!explorer || !stage) return;
+  if (!explorer.classList.contains("is-open") && !explorer.classList.contains("is-closing")) {
+    return;
+  }
 
+  scrollArmed = false;
+  explorer.classList.add("is-closing");
   explorer.classList.remove("is-open");
   stage.setAttribute("aria-hidden", "true");
   setActiveCard(null);
@@ -459,11 +487,34 @@ function closeSection({ clearHash = true } = {}) {
   if (clearHash) {
     window.history.replaceState(null, "", window.location.pathname + window.location.search);
   }
+
+  window.clearTimeout(closeTimer);
+  closeTimer = window.setTimeout(() => {
+    explorer.classList.remove("is-closing");
+  }, 650);
+}
+
+function onScrollClose() {
+  if (!scrollArmed || !isExplorerOpen()) return;
+
+  const explorer = getExplorer();
+  if (!explorer) return;
+
+  const y = window.scrollY;
+  const scrollingUp = y < lastScrollY - 2;
+  lastScrollY = y;
+
+  if (!scrollingUp) return;
+
+  const top = explorer.getBoundingClientRect().top;
+  // Scrolled up enough that the section deck / hero zone is coming back.
+  if (top > 72) {
+    closeSection();
+  }
 }
 
 function initExplorer() {
   const cards = document.querySelectorAll(".card[data-section]");
-  const backBtn = document.getElementById("stage-back");
 
   cards.forEach((card) => {
     card.addEventListener("click", () => {
@@ -472,9 +523,7 @@ function initExplorer() {
     });
   });
 
-  backBtn?.addEventListener("click", () => {
-    closeSection();
-  });
+  window.addEventListener("scroll", onScrollClose, { passive: true });
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeSection();
@@ -482,7 +531,6 @@ function initExplorer() {
 
   const hashKey = window.location.hash.replace("#", "");
   if (sections[hashKey]) {
-    // Open directly if deep-linked, skip auto-about.
     openSection(hashKey, { pushHash: false });
   }
 }
