@@ -403,43 +403,89 @@ const sections = {
 function setActiveCard(key) {
   const cards = document.querySelectorAll(".card[data-section]");
   cards.forEach((card) => {
-    const isActive = card.getAttribute("data-section") === key;
+    const isActive = key && card.getAttribute("data-section") === key;
     card.classList.toggle("is-active", isActive);
   });
 }
 
-function setSection(key) {
+function fillStage(key) {
   const section = sections[key];
-  if (!section) return;
+  if (!section) return false;
 
-  const panelEl = document.querySelector(".detail-panel");
   const titleEl = document.getElementById("detail-title");
   const contentEl = document.getElementById("detail-content");
+  if (!titleEl || !contentEl) return false;
 
-  panelEl?.classList.add("is-switching");
+  contentEl.classList.add("is-switching");
   window.setTimeout(() => {
     titleEl.textContent = section.title;
     contentEl.innerHTML = section.html;
-    panelEl?.classList.remove("is-switching");
-  }, 110);
+    contentEl.classList.remove("is-switching");
+  }, 90);
 
   setActiveCard(key);
-  window.history.replaceState(null, "", `#${key}`);
+  return true;
 }
 
-function initCards() {
+function openSection(key, { pushHash = true } = {}) {
+  if (!fillStage(key)) return;
+
+  const explorer = document.getElementById("explorer");
+  const stage = document.getElementById("explorer-stage");
+  if (!explorer || !stage) return;
+
+  explorer.classList.add("is-open");
+  stage.setAttribute("aria-hidden", "false");
+
+  if (pushHash) {
+    window.history.replaceState(null, "", `#${key}`);
+  }
+
+  // Scroll so the dive happens in view — feels continuous.
+  window.requestAnimationFrame(() => {
+    explorer.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
+
+function closeSection({ clearHash = true } = {}) {
+  const explorer = document.getElementById("explorer");
+  const stage = document.getElementById("explorer-stage");
+  if (!explorer || !stage) return;
+
+  explorer.classList.remove("is-open");
+  stage.setAttribute("aria-hidden", "true");
+  setActiveCard(null);
+
+  if (clearHash) {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
+}
+
+function initExplorer() {
   const cards = document.querySelectorAll(".card[data-section]");
+  const backBtn = document.getElementById("stage-back");
+
   cards.forEach((card) => {
     card.addEventListener("click", () => {
       const key = card.getAttribute("data-section");
-      setSection(key);
+      openSection(key);
     });
   });
 
+  backBtn?.addEventListener("click", () => {
+    closeSection();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeSection();
+  });
+
   const hashKey = window.location.hash.replace("#", "");
-  const startKey = sections[hashKey] ? hashKey : "about";
-  setSection(startKey);
+  if (sections[hashKey]) {
+    // Open directly if deep-linked, skip auto-about.
+    openSection(hashKey, { pushHash: false });
+  }
 }
 
-document.addEventListener("DOMContentLoaded", initCards);
+document.addEventListener("DOMContentLoaded", initExplorer);
 
