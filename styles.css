@@ -509,21 +509,6 @@ body {
   overscroll-behavior: contain;
 }
 
-.stage-panel::after {
-  content: "";
-  position: absolute;
-  right: 14px;
-  top: -10px;
-  width: 72px;
-  height: 16px;
-  border: 2px solid var(--border);
-  border-radius: 6px;
-  background: var(--accent-2);
-  transform: rotate(-2deg);
-  box-shadow: 2px 2px 0 #000;
-  opacity: 0.85;
-}
-
 .detail-header h2 {
   margin: 0;
   font-size: 1.4rem;
