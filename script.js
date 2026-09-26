@@ -3,15 +3,23 @@ const sections = {
     title: "About",
     html: `
       <p>
-        I am a Data Scientist and AI Engineer with a Master's degree in Data Science,
-        specializing in deep learning and natural language processing. My current work
-        focuses on building large language model (LLM) solutions in vertical domains,
-        combining research with production-grade systems.
+        I am a Data Scientist and AI Engineer based in Padua, currently working as an AI Engineer
+        at Stat4Value while pursuing a PhD at the University of Padua. Most of my day-to-day sits
+        at the intersection of large language models, NLP, and shipping systems that people can
+        actually use — not just demos that look good in a slide deck.
       </p>
       <p>
-        I enjoy turning complex, noisy data into robust AI products – from research
-        prototypes to deployed applications – and I am currently pursuing a PhD on
-        AI-driven technologies applied to Italian cultural heritage.
+        My Master's in Data Science leaned hard into deep learning and language technologies.
+        Since then I have built LLM applications in vertical domains, evaluation and briefing
+        pipelines, retrieval and recommendation flows, and research tooling that has to survive
+        messy real-world data. I like work where research ideas meet production constraints:
+        latency, cost, evaluation, and clarity.
+      </p>
+      <p>
+        My PhD explores AI-driven technologies for Italian cultural heritage — how models,
+        retrieval, and careful product design can make collections more accessible without losing
+        scholarly rigor. Outside of that, I am usually iterating on agentic workflows, LLM
+        evaluation, and cloud-backed ML products.
       </p>
     `,
   },
