@@ -34,6 +34,7 @@ html,
 body {
   margin: 0;
   padding: 0;
+  height: 100%;
   min-height: 100%;
   font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -45,6 +46,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Full-bleed page — fit first screen */
@@ -61,6 +63,7 @@ body {
   box-shadow: none;
   min-height: 100vh;
   min-height: 100dvh;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -276,12 +279,12 @@ body {
   color: var(--fg);
 }
 
-/* Explorer: deck first, dive into stage */
+/* Explorer: fill leftover viewport under hero */
 .explorer {
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 var(--page-x) 12px;
+  max-width: none;
+  margin: 0;
+  padding: 8px var(--page-x) 16px;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -291,10 +294,16 @@ body {
 .explorer-viewport {
   position: relative;
   flex: 1 1 auto;
+  width: 100%;
+  max-width: 1680px;
+  margin: 0 auto;
   min-height: 0;
+  height: 100%;
   overflow: visible;
   border-radius: var(--radius);
-  padding: 6px 14px 10px 10px;
+  padding: 8px 18px 12px 14px;
+  display: flex;
+  flex-direction: column;
 }
 
 .explorer-deck,
@@ -314,12 +323,15 @@ body {
   opacity: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  flex: 1 1 auto;
   min-height: 100%;
+  height: 100%;
 }
 
 .deck-hint {
   margin: 0;
+  flex: 0 0 auto;
   padding-left: 2px;
   font-size: 0.74rem;
   letter-spacing: 0.14em;
@@ -331,24 +343,30 @@ body {
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-rows: 1fr 1fr;
+  gap: clamp(12px, 1.4vh, 18px) clamp(12px, 1.2vw, 18px);
+  flex: 1 1 auto;
+  min-height: 0;
+  align-content: stretch;
 }
 
 .card {
   border-radius: var(--radius);
   border: var(--border-width) solid var(--border);
   background: var(--card-bg);
-  padding: 14px 15px 16px;
+  padding: clamp(16px, 2vh, 28px) clamp(16px, 1.5vw, 24px);
   text-align: left;
   cursor: pointer;
   box-shadow: 5px 5px 0 #000;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: center;
+  gap: 6px;
   position: relative;
   overflow: hidden;
   color: var(--fg);
-  min-height: 96px;
+  min-height: 0;
+  height: 100%;
   transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease,
     background-color 0.14s ease;
 }
@@ -401,7 +419,7 @@ body {
 }
 
 .card-label {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: #c4ccd9;
@@ -409,26 +427,28 @@ body {
 }
 
 .card-title {
-  font-size: 1.02rem;
+  font-size: clamp(1.1rem, 1.5vw, 1.35rem);
   font-weight: 700;
   color: #fff;
 }
 
 .card-blurb {
-  font-size: 0.8rem;
-  line-height: 1.3;
+  font-size: clamp(0.84rem, 1vw, 0.95rem);
+  line-height: 1.35;
   color: #d0d7e4;
   margin-top: 2px;
+  max-width: 34ch;
 }
 
 .meta-bar {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: auto;
-  padding-top: 12px;
+  gap: 16px;
+  flex: 0 0 auto;
+  margin-top: 4px;
+  padding: 14px 4px 4px;
   border-top: 2px dashed #3a4358;
-  font-size: 0.8rem;
+  font-size: 0.86rem;
   color: #c8d0de;
 }
 
@@ -480,7 +500,7 @@ body {
   border-radius: var(--radius);
   border: var(--border-width) solid var(--border);
   background: #121722;
-  padding: 18px 20px 20px;
+  padding: 20px 22px 22px;
   box-shadow: 8px 8px 0 #000;
   position: relative;
   display: flex;
@@ -633,7 +653,7 @@ body {
 }
 
 .explorer.is-open .explorer-deck {
-  transform: translate3d(0, -10%, 0);
+  transform: translate3d(0, -8%, 0);
   opacity: 0;
   pointer-events: none;
 }
@@ -646,7 +666,7 @@ body {
 
 /* Scroll-up diminish — stage melts away, deck returns */
 .explorer.is-closing .explorer-stage {
-  transform: translate3d(0, 18%, 0);
+  transform: translate3d(0, 14%, 0);
   opacity: 0;
   pointer-events: none;
 }
@@ -659,7 +679,7 @@ body {
 
 .explorer.is-closing .explorer-viewport {
   overflow: visible;
-  padding: 6px 14px 10px 10px;
+  padding: 8px 18px 12px 14px;
 }
 
 .footer {
@@ -668,7 +688,8 @@ body {
 
 @media (max-width: 980px) {
   .page {
-    min-height: auto;
+    height: auto;
+    min-height: 100dvh;
   }
 
   .hero-inner {
@@ -683,8 +704,25 @@ body {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .explorer {
+    flex: 0 0 auto;
+  }
+
+  .explorer-viewport,
+  .explorer-deck {
+    height: auto;
+    min-height: 0;
+  }
+
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+    flex: 0 0 auto;
+  }
+
+  .card {
+    min-height: 112px;
+    height: auto;
   }
 
   .meta-bar {
