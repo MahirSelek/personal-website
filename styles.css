@@ -112,9 +112,9 @@ body {
   width: 280px;
   height: 280px;
   border-radius: 40px;
-  border: var(--border-width) solid var(--border);
+  border: 3px solid var(--border);
   background: var(--accent-2);
-  padding: 12px;
+  padding: 6px;
   box-shadow: 8px 8px 0 #000;
   overflow: hidden;
 }
@@ -123,6 +123,9 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 18%;
+  transform: scale(1.18);
+  transform-origin: center 22%;
   display: block;
   border-radius: 32px;
 }
@@ -163,11 +166,58 @@ body {
 
 .hero-subtitle {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   max-width: none;
-  line-height: 1.55;
+  line-height: 1.5;
   color: #d5dbe8;
   font-weight: 500;
+}
+
+.hero-stamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  padding: 8px 12px 8px 8px;
+  border-radius: 12px;
+  border: 3px solid var(--border);
+  box-shadow: 4px 4px 0 #000;
+  background: #151922;
+}
+
+.stamp-label {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 2px solid #111;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  color: #111;
+}
+
+.stamp-phd .stamp-label {
+  background: var(--accent-1);
+}
+
+.stamp-role .stamp-label {
+  background: var(--accent-3);
+}
+
+.stamp-text {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #eef1f7;
+  line-height: 1.3;
 }
 
 .focus-row {
@@ -223,61 +273,6 @@ body {
 .pill-muted {
   background: #1c2230;
   color: var(--fg);
-}
-
-.highlights {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin: 0 0 18px;
-}
-
-.highlight {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: var(--border-width) solid var(--border);
-  background: #121722;
-  box-shadow: 5px 5px 0 #000;
-  min-height: 96px;
-}
-
-.highlight:nth-child(1) {
-  background: linear-gradient(180deg, rgba(255, 107, 107, 0.14), rgba(255, 107, 107, 0)), #121722;
-}
-
-.highlight:nth-child(2) {
-  background: linear-gradient(180deg, rgba(29, 211, 176, 0.14), rgba(29, 211, 176, 0)), #121722;
-}
-
-.highlight:nth-child(3) {
-  background: linear-gradient(180deg, rgba(255, 217, 61, 0.14), rgba(255, 217, 61, 0)), #121722;
-}
-
-.highlight:nth-child(4) {
-  background: linear-gradient(180deg, rgba(123, 131, 214, 0.16), rgba(123, 131, 214, 0)), #121722;
-}
-
-.highlight-kicker {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-}
-
-.highlight strong {
-  font-size: 0.98rem;
-  color: var(--fg);
-  line-height: 1.25;
-}
-
-.highlight span:last-child {
-  font-size: 0.84rem;
-  color: #b7c0d1;
-  line-height: 1.35;
 }
 
 .layout {
@@ -484,11 +479,17 @@ body {
 }
 
 .detail-item-meta {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
+  letter-spacing: 0.06em;
+  color: #e8edf7;
+  font-weight: 700;
   font-family: "JetBrains Mono", ui-monospace, monospace;
+  background: rgba(255, 217, 61, 0.18);
+  border: 2px solid #ffd93d;
+  border-radius: 8px;
+  padding: 3px 8px;
+  white-space: nowrap;
 }
 
 .detail-item-body {
@@ -562,12 +563,6 @@ body {
   color: var(--accent-3);
 }
 
-@media (max-width: 1100px) {
-  .highlights {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 900px) {
   .page {
     margin: 12px;
@@ -592,6 +587,15 @@ body {
   .footer {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .detail-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detail-item-meta {
+    white-space: normal;
+  }
 }
 
 @media (max-width: 640px) {
@@ -607,10 +611,6 @@ body {
 
   .hero-subtitle {
     font-size: 0.95rem;
-  }
-
-  .highlights {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   .grid {

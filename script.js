@@ -3,23 +3,19 @@ const sections = {
     title: "About",
     html: `
       <p>
-        I am a Data Scientist and AI Engineer based in Padua, currently working as an AI Engineer
-        at Stat4Value while pursuing a PhD at the University of Padua. Most of my day-to-day sits
-        at the intersection of large language models, NLP, and shipping systems that people can
-        actually use — not just demos that look good in a slide deck.
+        I am a Data Scientist and AI Engineer based in Padua. Right now I work as an AI Engineer
+        at Stat4Value and I am doing a PhD at the University of Padua. Most of my work sits between
+        large language models, NLP, and systems that people can actually use.
       </p>
       <p>
-        My Master's in Data Science leaned hard into deep learning and language technologies.
-        Since then I have built LLM applications in vertical domains, evaluation and briefing
-        pipelines, retrieval and recommendation flows, and research tooling that has to survive
-        messy real-world data. I like work where research ideas meet production constraints:
-        latency, cost, evaluation, and clarity.
+        My Master's in Data Science focused on deep learning and language technologies. Since then
+        I have built LLM applications in vertical domains, evaluation pipelines, retrieval and
+        recommendation flows, and research tools that have to deal with messy real-world data.
       </p>
       <p>
-        My PhD explores AI-driven technologies for Italian cultural heritage — how models,
-        retrieval, and careful product design can make collections more accessible without losing
-        scholarly rigor. Outside of that, I am usually iterating on agentic workflows, LLM
-        evaluation, and cloud-backed ML products.
+        My PhD looks at AI for Italian cultural heritage: how models and careful product design can
+        make collections easier to explore without losing scholarly rigor. Outside that, I keep
+        iterating on agentic workflows, LLM evaluation, and cloud-backed ML products.
       </p>
     `,
   },
